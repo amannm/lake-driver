@@ -1,4 +1,4 @@
-package systems.cauldron.function.build.adapter;
+package systems.cauldron.drivers.adapter;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -9,7 +9,7 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import systems.cauldron.function.build.LakeDriver;
+import systems.cauldron.drivers.LakeDriver;
 
 import javax.json.*;
 import java.io.IOException;

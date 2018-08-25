@@ -1,6 +1,6 @@
-package systems.cauldron.function.build;
+package systems.cauldron.drivers;
 
-import systems.cauldron.function.build.adapter.LakeSchemaFactory;
+import systems.cauldron.drivers.adapter.LakeSchemaFactory;
 
 import javax.json.Json;
 import javax.json.JsonArray;

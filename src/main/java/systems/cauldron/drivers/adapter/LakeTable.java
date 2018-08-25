@@ -1,4 +1,4 @@
-package systems.cauldron.function.build.adapter;
+package systems.cauldron.drivers.adapter;
 
 import org.apache.calcite.DataContext;
 import org.apache.calcite.linq4j.AbstractEnumerable;
@@ -17,9 +17,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import systems.cauldron.function.build.config.ColumnSpecification;
-import systems.cauldron.function.build.config.FormatSpecification;
-import systems.cauldron.function.build.config.TableSpecification;
+import systems.cauldron.drivers.config.ColumnSpecification;
+import systems.cauldron.drivers.config.FormatSpecification;
+import systems.cauldron.drivers.config.TableSpecification;
 
 import java.net.URI;
 import java.util.*;

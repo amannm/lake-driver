@@ -1,11 +1,11 @@
-package systems.cauldron.function.build.adapter;
+package systems.cauldron.drivers.adapter;
 
 import org.apache.calcite.schema.Schema;
 import org.apache.calcite.schema.SchemaFactory;
 import org.apache.calcite.schema.SchemaPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import systems.cauldron.function.build.config.TableSpecification;
+import systems.cauldron.drivers.config.TableSpecification;
 
 import javax.json.Json;
 import javax.json.JsonArray;

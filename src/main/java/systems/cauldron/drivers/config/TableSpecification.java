@@ -1,4 +1,4 @@
-package systems.cauldron.function.build.config;
+package systems.cauldron.drivers.config;
 
 import javax.json.JsonObject;
 import java.net.URI;

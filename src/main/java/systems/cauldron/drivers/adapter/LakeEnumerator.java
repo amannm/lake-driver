@@ -1,4 +1,4 @@
-package systems.cauldron.function.build.adapter;
+package systems.cauldron.drivers.adapter;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -8,7 +8,7 @@ import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.linq4j.Enumerator;
-import systems.cauldron.function.build.config.FormatSpecification;
+import systems.cauldron.drivers.config.FormatSpecification;
 
 import java.io.InputStream;
 import java.net.URI;
