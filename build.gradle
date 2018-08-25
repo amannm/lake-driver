@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group 'systems.cauldron'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 10
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    //logging
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7+'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7+'
+
+    //json tools
+    compile group: 'javax.json', name: 'javax.json-api', version: '1.1.2'
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.1.2'
+
+    //sql engine
+    compile group: 'org.apache.calcite', name: 'calcite-core', version: '1.17.0'
+
+    //cloud storage
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1+'
+
+    //csv parsing
+    compile group: 'com.univocity', name: 'univocity-parsers', version: '2+'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.compileClasspath
+    }
+}
+
+build.dependsOn buildZip

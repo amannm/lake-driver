@@ -1,0 +1,34 @@
+{
+  "label": "relationships",
+  "location": "s3://build.cauldron.tools/relationships",
+  "format": {
+    "delimiter": ",",
+    "lineSeparator": "\n",
+    "quoteChar": "\"",
+    "escape": "\\",
+    "commentChar": "#",
+    "header": false,
+    "strictQuotes": false,
+    "ignoreLeadingWhiteSpace": false,
+    "ignoreQuotations": false,
+    "nullFieldIndicator": "neither",
+    "compression": "none"
+  },
+  "columns": [
+    {
+      "label": "subject_person_id",
+      "datatype": "integer",
+      "nullable": false
+    },
+    {
+      "label": "predicate_id",
+      "datatype": "string",
+      "nullable": false
+    },
+    {
+      "label": "object_person_id",
+      "datatype": "integer",
+      "nullable": false
+    }
+  ]
+}

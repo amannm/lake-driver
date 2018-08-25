@@ -1,0 +1,34 @@
+{
+  "label": "people",
+  "location": "s3://build.cauldron.tools/people",
+  "format": {
+    "delimiter": ",",
+    "lineSeparator": "\n",
+    "quoteChar": "\"",
+    "escape": "\\",
+    "commentChar": "#",
+    "header": false,
+    "strictQuotes": false,
+    "ignoreLeadingWhiteSpace": false,
+    "ignoreQuotations": false,
+    "nullFieldIndicator": "neither",
+    "compression": "none"
+  },
+  "columns": [
+    {
+      "label": "id",
+      "datatype": "integer",
+      "nullable": false
+    },
+    {
+      "label": "firstname",
+      "datatype": "string",
+      "nullable": false
+    },
+    {
+      "label": "lastname",
+      "datatype": "string",
+      "nullable": false
+    }
+  ]
+}
