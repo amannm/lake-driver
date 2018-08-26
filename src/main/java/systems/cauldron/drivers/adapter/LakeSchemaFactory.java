@@ -6,8 +6,6 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.TableSpecification;
-import systems.cauldron.drivers.provider.LakeS3GetProvider;
-import systems.cauldron.drivers.provider.LakeS3SelectProvider;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -32,6 +30,13 @@ public class LakeSchemaFactory implements SchemaFactory {
         String inputTablesJsonArrayString = (String) operand.get("inputTables");
         String providerClassName = (String) operand.get("provider");
 
+        Class<?> providerClass;
+        try {
+            providerClass = Class.forName(providerClassName);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("encountered unknown provider class: " + providerClassName);
+        }
+
         JsonArray inputTables;
         try (JsonReader reader = Json.createReader(new StringReader(inputTablesJsonArrayString))) {
             inputTables = reader.readArray();
@@ -39,7 +44,7 @@ public class LakeSchemaFactory implements SchemaFactory {
         List<LakeTable> tables = inputTables.stream()
                 .map(v -> (JsonObject) v)
                 .map(TableSpecification::new)
-                .map(s -> new LakeTable(s, getProviderFactory(s, providerClassName)))
+                .map(s -> new LakeTable(s, providerClass))
                 .collect(Collectors.toList());
 
 
@@ -47,13 +52,4 @@ public class LakeSchemaFactory implements SchemaFactory {
     }
 
 
-    public LakeProviderFactory getProviderFactory(TableSpecification specification, String providerClassName) {
-        if (LakeS3SelectProvider.class.getName().equals(providerClassName)) {
-            return (filters, projects, fieldTypes) -> new LakeS3SelectProvider(specification.location, specification.format, filters, projects, fieldTypes);
-        }
-        if (LakeS3GetProvider.class.getName().equals(providerClassName)) {
-            return (filters, projects, fieldTypes) -> new LakeS3GetProvider(specification.location, projects, fieldTypes);
-        }
-        throw new IllegalArgumentException("encountered unknown provider class name: " + providerClassName);
-    }
 }

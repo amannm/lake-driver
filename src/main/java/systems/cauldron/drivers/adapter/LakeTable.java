@@ -15,8 +15,9 @@ import systems.cauldron.drivers.config.ColumnSpecification;
 import systems.cauldron.drivers.config.FormatSpecification;
 import systems.cauldron.drivers.config.TableSpecification;
 import systems.cauldron.drivers.provider.LakeProvider;
+import systems.cauldron.drivers.provider.LakeS3GetProvider;
+import systems.cauldron.drivers.provider.LakeS3SelectProvider;
 
-import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
@@ -27,17 +28,15 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private static final Logger LOG = LoggerFactory.getLogger(LakeTable.class);
 
     private final String label;
-    private final URI source;
     private final List<ColumnSpecification> columns;
     private final FormatSpecification format;
     private final LakeProviderFactory lakeProviderFactory;
 
-    public LakeTable(TableSpecification specification, LakeProviderFactory lakeProviderFactory) {
+    public LakeTable(TableSpecification specification, Class<?> lakeProviderClass) {
         this.label = specification.label.toUpperCase();
-        this.source = specification.location;
         this.columns = specification.columns;
         this.format = specification.format;
-        this.lakeProviderFactory = lakeProviderFactory;
+        this.lakeProviderFactory = getProviderFactory(specification, lakeProviderClass);
     }
 
     public String getLabel() {
@@ -64,7 +63,6 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                 .toArray(LakeFieldType[]::new);
         projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
         LakeProvider gateway = lakeProviderFactory.getProvider(filters, projects, allFieldTypes);
-        //LakeProvider gateway = new LakeS3GetProvider(source, projects, allFieldTypes);
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
                 return new LakeTableEnumerator(format, cancelFlag, gateway);
@@ -72,5 +70,14 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         };
     }
 
+    private static LakeProviderFactory getProviderFactory(TableSpecification specification, Class<?> providerClass) {
+        if (LakeS3SelectProvider.class.equals(providerClass)) {
+            return (filters, projects, fieldTypes) -> new LakeS3SelectProvider(specification.location, specification.format, filters, projects, fieldTypes);
+        }
+        if (LakeS3GetProvider.class.equals(providerClass)) {
+            return (filters, projects, fieldTypes) -> new LakeS3GetProvider(specification.location, projects, fieldTypes);
+        }
+        throw new IllegalArgumentException("encountered unknown provider class: " + providerClass.getName());
+    }
 
 }

@@ -3,6 +3,7 @@ package systems.cauldron.drivers;
 import systems.cauldron.drivers.adapter.LakeSchemaFactory;
 import systems.cauldron.drivers.config.TableSpecification;
 import systems.cauldron.drivers.provider.LakeProvider;
+import systems.cauldron.drivers.provider.LakeS3GetProvider;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -21,6 +22,10 @@ public class LakeDriver {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Connection getConnection(List<TableSpecification> tables) throws SQLException {
+        return getConnection(tables, LakeS3GetProvider.class);
     }
 
     public static Connection getConnection(List<TableSpecification> tables, Class<? extends LakeProvider> providerClass) throws SQLException {
