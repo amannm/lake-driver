@@ -1,6 +1,7 @@
 # lake-driver
-* JDBC driver for executing ANSI compliant SQL select statements (read-only) on AWS using the newish "S3 Select" features
-* Most of the work is done by the Apache Calcite (and Apache Avatica) projects.
+* JDBC driver for executing full-featured ANSI compliant SQL select statements on top of AWS S3 flat-file assets
+* query optimization pushes column projection and filtering over to AWS ideally leading to less data needing transfer and loading into memory
+* Most of the work is done by the Apache Calcite (and Apache Avatica) projects, via an interface called ProjectableFilterableTable that maps eerily well to the subset of SQL currently supported by "S3 Select"
 * In-depth paper about Apache Calcite: https://arxiv.org/pdf/1802.10233.pdf
 
 ## environment setup
