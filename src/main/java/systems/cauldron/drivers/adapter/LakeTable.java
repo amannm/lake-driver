@@ -35,7 +35,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         this.label = specification.label.toUpperCase();
         this.columns = specification.columns;
         this.format = specification.format;
-        this.providerFactory = LakeProvider.getFactory(specification, lakeProviderClass);
+        this.providerFactory = LakeProviderFactory.create(specification, lakeProviderClass);
     }
 
     public String getLabel() {
@@ -61,7 +61,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                 .map(LakeFieldType::of)
                 .toArray(LakeFieldType[]::new);
         projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
-        LakeProvider provider = providerFactory.getProvider(filters, projects, allFieldTypes);
+        LakeProvider provider = providerFactory.build(filters, projects, allFieldTypes);
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
                 return new LakeTableEnumerator(format, cancelFlag, provider);
