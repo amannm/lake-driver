@@ -5,26 +5,14 @@ import javax.json.JsonObject;
 
 public class ColumnSpecification {
 
-    private final String label;
-    private final String datatype;
-    private final Boolean nullable;
+    public final String label;
+    public final String datatype;
+    public final Boolean nullable;
 
     public ColumnSpecification(JsonObject object) {
         this.label = object.getString("label");
         this.datatype = object.getString("datatype");
         this.nullable = object.getBoolean("nullable");
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public String getDatatype() {
-        return datatype;
-    }
-
-    public boolean isNullable() {
-        return nullable == null || nullable;
     }
 
     public JsonObject toJson() {

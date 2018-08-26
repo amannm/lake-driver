@@ -33,10 +33,10 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private final FormatSpecification format;
 
     public LakeTable(TableSpecification specification) {
-        this.label = specification.getLabel().toUpperCase();
-        this.source = specification.getLocation();
-        this.columns = specification.getColumns();
-        this.format = specification.getFormat();
+        this.label = specification.label.toUpperCase();
+        this.source = specification.location;
+        this.columns = specification.columns;
+        this.format = specification.format;
     }
 
     public String getLabel() {
@@ -47,9 +47,9 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     public RelDataType getRowType(RelDataTypeFactory typeFactory) {
         RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
         for (ColumnSpecification c : columns) {
-            RelDataType relDataType = LakeFieldType.of(c.getDatatype()).toType(typeFactory);
-            builder.add(c.getLabel().toUpperCase(), relDataType);
-            builder.nullable(c.isNullable());
+            RelDataType relDataType = LakeFieldType.of(c.datatype).toType(typeFactory);
+            builder.add(c.label.toUpperCase(), relDataType);
+            builder.nullable(c.nullable == null || c.nullable);
         }
         return builder.build();
     }
@@ -60,7 +60,6 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
         final LakeFieldType[] fieldTypes = generateFieldList(projects);
         LakeProvider gateway = new LakeS3SelectProvider(source, format, filters, projects);
-
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
                 return new LakeTableEnumerator(format, fieldTypes, cancelFlag, gateway);
@@ -71,7 +70,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private LakeFieldType[] generateFieldList(int[] fields) {
         return IntStream.of(fields).boxed()
                 .map(columns::get)
-                .map(ColumnSpecification::getDatatype)
+                .map(c -> c.datatype)
                 .map(LakeFieldType::of)
                 .toArray(LakeFieldType[]::new);
     }
