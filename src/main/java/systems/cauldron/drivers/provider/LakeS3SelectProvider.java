@@ -11,6 +11,8 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.FormatSpecification;
 
 import java.io.InputStream;
@@ -24,12 +26,74 @@ import static org.apache.calcite.sql.SqlKind.LITERAL;
 
 public class LakeS3SelectProvider extends LakeProvider {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectProvider.class);
+
+    private final String query;
+
     public LakeS3SelectProvider(URI source, FormatSpecification format, List<RexNode> filters, int[] projects) {
-        super(source, format, filters, projects);
+        super(source, format);
+        this.query = compileQuery(filters, projects);
+        LOG.info("{}", query);
     }
 
     @Override
-    public String compileQuery(List<RexNode> filters, int[] projects) {
+    public InputStream fetchSource() {
+
+        AmazonS3URI amazonS3URI = new AmazonS3URI(source);
+
+        SelectObjectContentRequest request = new SelectObjectContentRequest();
+        request.setBucketName(amazonS3URI.getBucket());
+        request.setKey(amazonS3URI.getKey());
+        request.setExpression(query);
+        request.setExpressionType(ExpressionType.SQL);
+        request.setInputSerialization(getInputSerialization(format));
+        request.setOutputSerialization(getOutputSerialization(format));
+
+        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
+        SelectObjectContentResult result = s3.selectObjectContent(request);
+        SelectObjectContentEventStream payload = result.getPayload();
+        return payload.getRecordsInputStream();
+    }
+
+    private static InputSerialization getInputSerialization(FormatSpecification spec) {
+
+        CSVInput csvInput = new CSVInput();
+        csvInput.setFieldDelimiter(spec.delimiter);
+        csvInput.setRecordDelimiter(spec.lineSeparator);
+        csvInput.setQuoteCharacter(spec.quoteChar);
+        csvInput.setQuoteEscapeCharacter(spec.escape);
+        csvInput.setFileHeaderInfo(spec.header ? FileHeaderInfo.USE : FileHeaderInfo.NONE);
+        csvInput.setComments(spec.commentChar);
+
+        InputSerialization inputSerialization = new InputSerialization();
+        inputSerialization.setCsv(csvInput);
+        switch (spec.compression) {
+            case GZIP:
+                inputSerialization.setCompressionType(CompressionType.GZIP);
+                break;
+            case NONE:
+            default:
+                inputSerialization.setCompressionType(CompressionType.NONE);
+        }
+        return inputSerialization;
+
+    }
+
+    private static OutputSerialization getOutputSerialization(FormatSpecification spec) {
+
+        CSVOutput csvOutput = new CSVOutput();
+        csvOutput.setFieldDelimiter(spec.delimiter);
+        csvOutput.setRecordDelimiter(spec.lineSeparator);
+        csvOutput.setQuoteCharacter(spec.quoteChar);
+        csvOutput.setQuoteEscapeCharacter(spec.escape);
+
+        OutputSerialization outputSerialization = new OutputSerialization();
+        outputSerialization.setCsv(csvOutput);
+        return outputSerialization;
+
+    }
+
+    private static String compileQuery(List<RexNode> filters, int[] projects) {
         String where = compileNativeFilterString(filters);
         String selectList = IntStream.of(projects).boxed()
                 .map(i -> i + 1).map(i -> "_" + i)
@@ -151,61 +215,4 @@ public class LakeS3SelectProvider extends LakeProvider {
         return literal.getValue2().toString();
     }
 
-
-    @Override
-    public InputStream fetchSource() {
-
-        AmazonS3URI amazonS3URI = new AmazonS3URI(source);
-
-        SelectObjectContentRequest request = new SelectObjectContentRequest();
-        request.setBucketName(amazonS3URI.getBucket());
-        request.setKey(amazonS3URI.getKey());
-        request.setExpression(query);
-        request.setExpressionType(ExpressionType.SQL);
-        request.setInputSerialization(getInputSerialization(format));
-        request.setOutputSerialization(getOutputSerialization(format));
-
-        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-        SelectObjectContentResult result = s3.selectObjectContent(request);
-        SelectObjectContentEventStream payload = result.getPayload();
-        return payload.getRecordsInputStream();
-    }
-
-    private InputSerialization getInputSerialization(FormatSpecification spec) {
-
-        CSVInput csvInput = new CSVInput();
-        csvInput.setFieldDelimiter(spec.delimiter);
-        csvInput.setRecordDelimiter(spec.lineSeparator);
-        csvInput.setQuoteCharacter(spec.quoteChar);
-        csvInput.setQuoteEscapeCharacter(spec.escape);
-        csvInput.setFileHeaderInfo(spec.header ? FileHeaderInfo.USE : FileHeaderInfo.NONE);
-        csvInput.setComments(spec.commentChar);
-
-        InputSerialization inputSerialization = new InputSerialization();
-        inputSerialization.setCsv(csvInput);
-        switch (spec.compression) {
-            case GZIP:
-                inputSerialization.setCompressionType(CompressionType.GZIP);
-                break;
-            case NONE:
-            default:
-                inputSerialization.setCompressionType(CompressionType.NONE);
-        }
-        return inputSerialization;
-
-    }
-
-    private OutputSerialization getOutputSerialization(FormatSpecification spec) {
-
-        CSVOutput csvOutput = new CSVOutput();
-        csvOutput.setFieldDelimiter(spec.delimiter);
-        csvOutput.setRecordDelimiter(spec.lineSeparator);
-        csvOutput.setQuoteCharacter(spec.quoteChar);
-        csvOutput.setQuoteEscapeCharacter(spec.escape);
-
-        OutputSerialization outputSerialization = new OutputSerialization();
-        outputSerialization.setCsv(csvOutput);
-        return outputSerialization;
-
-    }
 }
