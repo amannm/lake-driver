@@ -60,7 +60,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
         final LakeFieldType[] fieldTypes = generateFieldList();
         LakeProvider gateway = new LakeS3SelectProvider(source, format, filters, nonNullProjects);
-        //LakeProvider gateway = new LakeS3Provider(source);
+        //LakeProvider gateway = new LakeS3GetProvider(source);
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
                 return new LakeTableEnumerator(format, fieldTypes, nonNullProjects, cancelFlag, gateway);
