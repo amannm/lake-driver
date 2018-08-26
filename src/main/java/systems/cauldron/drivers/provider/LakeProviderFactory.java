@@ -10,9 +10,9 @@ public interface LakeProviderFactory {
 
     LakeProvider build(List<RexNode> filters, int[] projects, LakeFieldType[] fieldTypes);
 
-    static LakeProviderFactory create(TableSpecification specification, Class<?> providerClass) {
+    static LakeProviderFactory create(Class<?> providerClass, TableSpecification specification) {
         if (LakeS3SelectProvider.class.equals(providerClass)) {
-            return (filters, projects, fieldTypes) -> new LakeS3SelectProvider(specification.location, specification.format, filters, projects, fieldTypes);
+            return (filters, projects, fieldTypes) -> new LakeS3SelectProvider(specification.location, projects, fieldTypes, specification.format, filters);
         }
         if (LakeS3GetProvider.class.equals(providerClass)) {
             return (filters, projects, fieldTypes) -> new LakeS3GetProvider(specification.location, projects, fieldTypes);

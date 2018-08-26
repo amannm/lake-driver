@@ -32,7 +32,7 @@ public class LakeS3SelectProvider extends LakeProvider {
     private final FormatSpecification format;
     private final String query;
 
-    public LakeS3SelectProvider(URI source, FormatSpecification format, List<RexNode> filters, int[] projects, LakeFieldType[] fieldTypes) {
+    public LakeS3SelectProvider(URI source, int[] projects, LakeFieldType[] fieldTypes, FormatSpecification format, List<RexNode> filters) {
         super(source, projects, fieldTypes);
         this.format = format;
         this.query = compileQuery(filters, projects);

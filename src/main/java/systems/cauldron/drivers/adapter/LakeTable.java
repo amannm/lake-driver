@@ -35,7 +35,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         this.label = specification.label.toUpperCase();
         this.columns = specification.columns;
         this.format = specification.format;
-        this.providerFactory = LakeProviderFactory.create(specification, lakeProviderClass);
+        this.providerFactory = LakeProviderFactory.create(lakeProviderClass, specification);
     }
 
     public String getLabel() {
