@@ -1,7 +1,7 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.provider;
 
 import org.apache.calcite.rex.RexNode;
-import systems.cauldron.drivers.provider.LakeProvider;
+import systems.cauldron.drivers.adapter.LakeFieldType;
 
 import java.util.List;
 
