@@ -11,6 +11,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import systems.cauldron.drivers.LakeDriver;
 import systems.cauldron.drivers.config.TableSpecification;
+import systems.cauldron.drivers.provider.LakeProvider;
+import systems.cauldron.drivers.provider.LakeS3GetProvider;
+import systems.cauldron.drivers.provider.LakeS3SelectProvider;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -43,42 +46,65 @@ public class LakeDriverTest {
         unstageInputs("people", "relationships");
     }
 
+
+    private static final String TEST_QUERY_A = "select lastname, firstname from people where id = 1337";
+    private static final String TEST_RESULT_A = "Malik,Amann";
+
+    private static final String TEST_QUERY_B = "select subject_person_id from relationships where object_person_id = 1337 and predicate_id = 'has_friend'";
+    private static final String TEST_RESULT_B = "420";
+
+    private static final String TEST_QUERY_C = "select people.id, relationships.object_person_id from people inner join relationships on people.id = relationships.subject_person_id and relationships.predicate_id = 'has_friend' and people.firstname like '%mann'";
+    private static final String TEST_RESULT_C = "1337,420";
+
     @Test
-    public void oneTableSimpleFilter() throws IOException {
-        String resultString = executeTaskAndGetResult(generateTableSpecifications("people"),
-                "select lastname, firstname from people where id = 1337"
-        );
-        assertEquals("Malik,Amann", resultString);
+    public void oneTableSimpleFilterS3Select() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3SelectProvider.class, generateTableSpecifications("people"), TEST_QUERY_A);
+        assertEquals(TEST_RESULT_A, resultString);
     }
 
     @Test
-    public void oneTableComplexFilter() throws IOException {
-        String resultString = executeTaskAndGetResult(generateTableSpecifications("relationships"),
-                "select subject_person_id from relationships where object_person_id = 1337 and predicate_id = 'has_friend'"
-        );
-        assertEquals("420", resultString);
+    public void oneTableComplexFilterS3Select() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3SelectProvider.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+        assertEquals(TEST_RESULT_B, resultString);
     }
 
     @Test
-    public void twoTableSimpleJoin() throws IOException {
-        String resultString = executeTaskAndGetResult(generateTableSpecifications("people", "relationships"),
-                "select people.id, relationships.object_person_id from people inner join relationships on people.id = relationships.subject_person_id and relationships.predicate_id = 'has_friend' and people.firstname like '%mann'"
-        );
-        assertEquals("1337,420", resultString);
+    public void twoTableSimpleJoinS3Select() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3SelectProvider.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+        assertEquals(TEST_RESULT_C, resultString);
     }
 
-    private static String executeTaskAndGetResult(List<TableSpecification> tables, String sqlScript) throws IOException {
+    @Test
+    public void oneTableSimpleFilterS3Get() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3GetProvider.class, generateTableSpecifications("people"), TEST_QUERY_A);
+        assertEquals(TEST_RESULT_A, resultString);
+    }
+
+    @Test
+    public void oneTableComplexFilterS3Get() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3GetProvider.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+        assertEquals(TEST_RESULT_B, resultString);
+    }
+
+    @Test
+    public void twoTableSimpleJoinS3Get() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3GetProvider.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+        assertEquals(TEST_RESULT_C, resultString);
+    }
+
+
+    private static String executeTaskAndGetResult(Class<? extends LakeProvider> clazz, List<TableSpecification> tables, String sqlScript) throws IOException {
         Path localResult = Files.createTempFile(null, null);
-        queryToFile(tables, sqlScript, localResult);
+        queryToFile(clazz, tables, sqlScript, localResult);
         String result = Files.lines(localResult, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
         Files.delete(localResult);
         return result;
     }
 
-    private static void queryToFile(List<TableSpecification> tableSpecifications, String sqlScript, Path destination) {
+    private static void queryToFile(Class<? extends LakeProvider> clazz, List<TableSpecification> tableSpecifications, String sqlScript, Path destination) {
 
         List<String> records = new ArrayList<>();
-        try (Connection connection = LakeDriver.getConnection(tableSpecifications)) {
+        try (Connection connection = LakeDriver.getConnection(tableSpecifications, clazz)) {
             try (PreparedStatement statement = connection.prepareStatement(sqlScript)) {
                 ResultSetMetaData metaData = statement.getMetaData();
                 int limit = metaData.getColumnCount();

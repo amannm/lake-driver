@@ -2,6 +2,7 @@ package systems.cauldron.drivers;
 
 import systems.cauldron.drivers.adapter.LakeSchemaFactory;
 import systems.cauldron.drivers.config.TableSpecification;
+import systems.cauldron.drivers.provider.LakeProvider;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -22,7 +23,7 @@ public class LakeDriver {
         }
     }
 
-    public static Connection getConnection(List<TableSpecification> tables) throws SQLException {
+    public static Connection getConnection(List<TableSpecification> tables, Class<? extends LakeProvider> providerClass) throws SQLException {
 
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         tables.stream().map(TableSpecification::toJson).forEach(jsonArrayBuilder::add);
@@ -30,6 +31,7 @@ public class LakeDriver {
         String tableSpecificationsString = build.toString();
 
         String schemaFactoryName = LakeSchemaFactory.class.getName();
+        String providerName = providerClass.getName();
 
         JsonObject modelJson = Json.createObjectBuilder()
                 .add("version", "1.0")
@@ -40,6 +42,7 @@ public class LakeDriver {
                                 .add("type", "custom")
                                 .add("factory", schemaFactoryName)
                                 .add("operand", Json.createObjectBuilder()
+                                        .add("provider", providerName)
                                         .add("inputTables", tableSpecificationsString))))
                 .build();
 

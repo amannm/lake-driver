@@ -15,7 +15,6 @@ import systems.cauldron.drivers.config.ColumnSpecification;
 import systems.cauldron.drivers.config.FormatSpecification;
 import systems.cauldron.drivers.config.TableSpecification;
 import systems.cauldron.drivers.provider.LakeProvider;
-import systems.cauldron.drivers.provider.LakeS3SelectProvider;
 
 import java.net.URI;
 import java.util.List;
@@ -31,12 +30,14 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private final URI source;
     private final List<ColumnSpecification> columns;
     private final FormatSpecification format;
+    private final LakeProviderFactory lakeProviderFactory;
 
-    public LakeTable(TableSpecification specification) {
+    public LakeTable(TableSpecification specification, LakeProviderFactory lakeProviderFactory) {
         this.label = specification.label.toUpperCase();
         this.source = specification.location;
         this.columns = specification.columns;
         this.format = specification.format;
+        this.lakeProviderFactory = lakeProviderFactory;
     }
 
     public String getLabel() {
@@ -62,7 +63,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                 .map(LakeFieldType::of)
                 .toArray(LakeFieldType[]::new);
         projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
-        LakeProvider gateway = new LakeS3SelectProvider(source, format, filters, projects, allFieldTypes);
+        LakeProvider gateway = lakeProviderFactory.getProvider(filters, projects, allFieldTypes);
         //LakeProvider gateway = new LakeS3GetProvider(source, projects, allFieldTypes);
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
