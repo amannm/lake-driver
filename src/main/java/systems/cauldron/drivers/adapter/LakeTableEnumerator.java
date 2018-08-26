@@ -7,7 +7,6 @@ import org.apache.calcite.linq4j.Enumerator;
 import systems.cauldron.drivers.config.FormatSpecification;
 import systems.cauldron.drivers.provider.LakeProvider;
 
-import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +23,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
     private final int[] projects;
     private Object[] current;
 
-    public LakeTableEnumerator(FormatSpecification readerConfig, AtomicBoolean cancelFlag, LakeProvider gateway) {
+    public LakeTableEnumerator(FormatSpecification readerConfig, AtomicBoolean cancelFlag, LakeProvider provider) {
         CsvFormat format = new CsvFormat();
         format.setDelimiter(readerConfig.delimiter);
         format.setLineSeparator(readerConfig.lineSeparator);
@@ -34,10 +33,9 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
         parserSettings.setFormat(format);
         parserSettings.setHeaderExtractionEnabled(readerConfig.header);
         this.parser = new CsvParser(parserSettings);
-        InputStream data = gateway.fetchSource();
-        this.parser.beginParsing(data);
-        this.fieldTypes = gateway.getFieldTypes();
-        this.projects = gateway.getProjects();
+        this.parser.beginParsing(provider.fetchSource());
+        this.fieldTypes = provider.getFieldTypes();
+        this.projects = provider.getProjects();
         this.cancelFlag = cancelFlag;
     }
 
