@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.ColumnSpecification;
 import systems.cauldron.drivers.config.FormatSpecification;
 import systems.cauldron.drivers.config.TableSpecification;
-import systems.cauldron.drivers.provider.LakeGateway;
-import systems.cauldron.drivers.provider.LakeS3SelectGateway;
+import systems.cauldron.drivers.provider.LakeProvider;
+import systems.cauldron.drivers.provider.LakeS3SelectProvider;
 
 import java.net.URI;
 import java.util.List;
@@ -59,7 +59,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
         final LakeFieldType[] fieldTypes = generateFieldList(projects);
-        LakeGateway gateway = new LakeS3SelectGateway(source, format, filters, projects);
+        LakeProvider gateway = new LakeS3SelectProvider(source, format, filters, projects);
 
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {

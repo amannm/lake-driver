@@ -9,15 +9,15 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
-public abstract class LakeGateway {
+public abstract class LakeProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LakeGateway.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LakeProvider.class);
 
     protected final URI source;
     protected final FormatSpecification format;
     protected final String query;
 
-    protected LakeGateway(URI source, FormatSpecification format, List<RexNode> filters, int[] projects) {
+    protected LakeProvider(URI source, FormatSpecification format, List<RexNode> filters, int[] projects) {
         this.source = source;
         this.format = format;
         this.query = compileQuery(filters, projects);

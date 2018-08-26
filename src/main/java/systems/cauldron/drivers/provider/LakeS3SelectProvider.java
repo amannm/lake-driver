@@ -22,9 +22,9 @@ import java.util.stream.IntStream;
 import static org.apache.calcite.sql.SqlKind.INPUT_REF;
 import static org.apache.calcite.sql.SqlKind.LITERAL;
 
-public class LakeS3SelectGateway extends LakeGateway {
+public class LakeS3SelectProvider extends LakeProvider {
 
-    public LakeS3SelectGateway(URI source, FormatSpecification format, List<RexNode> filters, int[] projects) {
+    public LakeS3SelectProvider(URI source, FormatSpecification format, List<RexNode> filters, int[] projects) {
         super(source, format, filters, projects);
     }
 

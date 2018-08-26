@@ -5,7 +5,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.linq4j.Enumerator;
 import systems.cauldron.drivers.config.FormatSpecification;
-import systems.cauldron.drivers.provider.LakeGateway;
+import systems.cauldron.drivers.provider.LakeProvider;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -23,7 +23,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
     private final LakeFieldType[] fieldTypes;
     private Object[] current;
 
-    public LakeTableEnumerator(FormatSpecification readerConfig, LakeFieldType[] fields, AtomicBoolean cancelFlag, LakeGateway gateway) {
+    public LakeTableEnumerator(FormatSpecification readerConfig, LakeFieldType[] fields, AtomicBoolean cancelFlag, LakeProvider gateway) {
         CsvFormat format = new CsvFormat();
         format.setDelimiter(readerConfig.delimiter);
         format.setLineSeparator(readerConfig.lineSeparator);
