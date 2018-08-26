@@ -19,6 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -63,10 +66,40 @@ public class LakeDriverTest {
 
     private static String executeTaskAndGetResult(JsonArray tables, String sqlScript) throws IOException {
         Path localResult = Files.createTempFile(null, null);
-        LakeDriver.process(tables, sqlScript, localResult);
+        queryToFile(tables, sqlScript, localResult);
         String result = Files.lines(localResult, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
         Files.delete(localResult);
         return result;
+    }
+
+    private static void queryToFile(JsonArray tableSpecifications, String sqlScript, Path destination) {
+
+        List<String> records = new ArrayList<>();
+        try (Connection connection = LakeDriver.getConnection(tableSpecifications)) {
+            try (PreparedStatement statement = connection.prepareStatement(sqlScript)) {
+                ResultSetMetaData metaData = statement.getMetaData();
+                int limit = metaData.getColumnCount();
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        List<String> builder = new ArrayList<>();
+                        for (int i = 1; i <= limit; i++) {
+                            String string = resultSet.getString(i);
+                            builder.add(string);
+                        }
+                        records.add(String.join(",", builder));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            Files.write(destination, records);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private static JsonArray generateTableSpecifications(String... keys) throws IOException {

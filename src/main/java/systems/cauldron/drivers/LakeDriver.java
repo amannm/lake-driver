@@ -5,16 +5,12 @@ import systems.cauldron.drivers.adapter.LakeSchemaFactory;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class LakeDriver {
 
-    //TODO: make this user exposed interface better and do things better here
     static {
         try {
             Class.forName("org.apache.calcite.jdbc.Driver");
@@ -23,7 +19,7 @@ public class LakeDriver {
         }
     }
 
-    private static Connection getConnection(JsonArray tableSpecifications) throws SQLException {
+    public static Connection getConnection(JsonArray tableSpecifications) throws SQLException {
 
         String tableSpecificationsString = tableSpecifications.toString();
 
@@ -42,37 +38,6 @@ public class LakeDriver {
                 .build();
 
         return DriverManager.getConnection("jdbc:calcite:model=inline:" + modelJson);
-    }
-
-    public static void process(JsonArray tableSpecifications, String sqlScript, Path destination) {
-
-        //TODO: don't load all results into memory before writing to disk
-        List<String> records = new ArrayList<>();
-        try (Connection connection = getConnection(tableSpecifications)) {
-            try (PreparedStatement statement = connection.prepareStatement(sqlScript)) {
-                ResultSetMetaData metaData = statement.getMetaData();
-                int limit = metaData.getColumnCount();
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        List<String> builder = new ArrayList<>();
-                        for (int i = 1; i <= limit; i++) {
-                            String string = resultSet.getString(i);
-                            builder.add(string);
-                        }
-                        records.add(String.join(",", builder));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            Files.write(destination, records);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
     }
 
 }
