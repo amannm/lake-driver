@@ -9,12 +9,12 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Logger;
 
-public class LakeDriver {
+public class LakeDriver implements Driver {
 
     static {
         try {
@@ -35,6 +35,11 @@ public class LakeDriver {
         JsonArray build = jsonArrayBuilder.build();
         String tableSpecificationsString = build.toString();
 
+
+    }
+
+    @Override
+    public Connection connect(String url, Properties info) throws SQLException {
         String schemaFactoryName = LakeSchemaFactory.class.getName();
         String providerName = providerClass.getName();
 
@@ -54,4 +59,33 @@ public class LakeDriver {
         return DriverManager.getConnection("jdbc:calcite:model=inline:" + modelJson);
     }
 
+    @Override
+    public boolean acceptsURL(String url) throws SQLException {
+        return false;
+    }
+
+    @Override
+    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+        return new DriverPropertyInfo[0];
+    }
+
+    @Override
+    public int getMajorVersion() {
+        return 0;
+    }
+
+    @Override
+    public int getMinorVersion() {
+        return 0;
+    }
+
+    @Override
+    public boolean jdbcCompliant() {
+        return false;
+    }
+
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        return null;
+    }
 }
