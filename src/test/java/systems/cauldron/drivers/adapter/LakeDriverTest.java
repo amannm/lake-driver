@@ -10,8 +10,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import systems.cauldron.drivers.LakeDriver;
+import systems.cauldron.drivers.config.TableSpecification;
 
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -64,7 +67,7 @@ public class LakeDriverTest {
         assertEquals("1337,420", resultString);
     }
 
-    private static String executeTaskAndGetResult(JsonArray tables, String sqlScript) throws IOException {
+    private static String executeTaskAndGetResult(List<TableSpecification> tables, String sqlScript) throws IOException {
         Path localResult = Files.createTempFile(null, null);
         queryToFile(tables, sqlScript, localResult);
         String result = Files.lines(localResult, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
@@ -72,7 +75,7 @@ public class LakeDriverTest {
         return result;
     }
 
-    private static void queryToFile(JsonArray tableSpecifications, String sqlScript, Path destination) {
+    private static void queryToFile(List<TableSpecification> tableSpecifications, String sqlScript, Path destination) {
 
         List<String> records = new ArrayList<>();
         try (Connection connection = LakeDriver.getConnection(tableSpecifications)) {
@@ -102,16 +105,17 @@ public class LakeDriverTest {
 
     }
 
-    private static JsonArray generateTableSpecifications(String... keys) throws IOException {
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+    private static List<TableSpecification> generateTableSpecifications(String... keys) throws IOException {
+        List<TableSpecification> builder = new ArrayList<>();
         for (String tableName : keys) {
             Path inputConfig = Paths.get("src", "test", "resources", tableName + ".json");
             try (JsonReader reader = Json.createReader(Files.newBufferedReader(inputConfig, StandardCharsets.UTF_8))) {
                 JsonObject jsonObject = reader.readObject();
-                builder.add(jsonObject);
+                TableSpecification spec = new TableSpecification(jsonObject);
+                builder.add(spec);
             }
         }
-        return builder.build();
+        return builder;
     }
 
     private static void stageInputs(String... keys) {

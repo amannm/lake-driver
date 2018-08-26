@@ -1,5 +1,7 @@
 package systems.cauldron.drivers.config;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import java.net.URI;
 import java.util.Collections;
@@ -39,4 +41,14 @@ public class TableSpecification {
         return Collections.unmodifiableList(columns);
     }
 
+    public JsonObject toJson() {
+        JsonArrayBuilder columnsJson = Json.createArrayBuilder();
+        columns.stream().map(ColumnSpecification::toJson).forEach(columnsJson::add);
+        return Json.createObjectBuilder()
+                .add("label", label)
+                .add("location", location.toString())
+                .add("format", format.toJson())
+                .add("columns", columnsJson)
+                .build();
+    }
 }

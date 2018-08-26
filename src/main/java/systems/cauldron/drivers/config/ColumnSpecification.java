@@ -1,5 +1,6 @@
 package systems.cauldron.drivers.config;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 public class ColumnSpecification {
@@ -24,5 +25,13 @@ public class ColumnSpecification {
 
     public boolean isNullable() {
         return nullable == null || nullable;
+    }
+
+    public JsonObject toJson() {
+        return Json.createObjectBuilder()
+                .add("label", label)
+                .add("datatype", datatype)
+                .add("nullable", nullable)
+                .build();
     }
 }

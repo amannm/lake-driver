@@ -1,13 +1,16 @@
 package systems.cauldron.drivers;
 
 import systems.cauldron.drivers.adapter.LakeSchemaFactory;
+import systems.cauldron.drivers.config.TableSpecification;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 
 public class LakeDriver {
 
@@ -19,9 +22,12 @@ public class LakeDriver {
         }
     }
 
-    public static Connection getConnection(JsonArray tableSpecifications) throws SQLException {
+    public static Connection getConnection(List<TableSpecification> tables) throws SQLException {
 
-        String tableSpecificationsString = tableSpecifications.toString();
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        tables.stream().map(TableSpecification::toJson).forEach(jsonArrayBuilder::add);
+        JsonArray build = jsonArrayBuilder.build();
+        String tableSpecificationsString = build.toString();
 
         String schemaFactoryName = LakeSchemaFactory.class.getName();
 

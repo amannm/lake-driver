@@ -1,5 +1,6 @@
 package systems.cauldron.drivers.config;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 public class FormatSpecification {
@@ -40,6 +41,23 @@ public class FormatSpecification {
         EMPTY_QUOTES,
         BOTH,
         NEITHER
+    }
+
+    public JsonObject toJson() {
+        return Json.createObjectBuilder()
+                .add("delimiter", "" + delimiter)
+                .add("lineSeparator", lineSeparator)
+                .add("quoteChar", "" + quoteChar)
+                .add("escape", "" + escape)
+                .add("commentChar", "" + commentChar)
+                .add("header", header)
+                .add("strictQuotes", strictQuotes)
+                .add("ignoreLeadingWhiteSpace", ignoreLeadingWhiteSpace)
+                .add("ignoreQuotations", ignoreQuotations)
+                .add("nullFieldIndicator", nullFieldIndicator.name().toLowerCase())
+                .add("compression", compression.name().toLowerCase())
+                .build();
+
     }
 
 }
