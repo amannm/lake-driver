@@ -31,7 +31,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private final FormatSpecification format;
     private final LakeProviderFactory providerFactory;
 
-    public LakeTable(TableSpecification specification, Class<?> lakeProviderClass) {
+    public LakeTable(Class<?> lakeProviderClass, TableSpecification specification) {
         this.label = specification.label.toUpperCase();
         this.columns = specification.columns;
         this.format = specification.format;

@@ -44,9 +44,8 @@ public class LakeSchemaFactory implements SchemaFactory {
         List<LakeTable> tables = inputTables.stream()
                 .map(v -> (JsonObject) v)
                 .map(TableSpecification::new)
-                .map(s -> new LakeTable(s, providerClass))
+                .map(s -> new LakeTable(providerClass, s))
                 .collect(Collectors.toList());
-
 
         return new LakeSchema(tables);
     }
