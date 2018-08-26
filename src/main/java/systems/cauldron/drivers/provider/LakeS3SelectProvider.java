@@ -28,10 +28,12 @@ public class LakeS3SelectProvider extends LakeProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectProvider.class);
 
+    private final FormatSpecification format;
     private final String query;
 
     public LakeS3SelectProvider(URI source, FormatSpecification format, List<RexNode> filters, int[] projects) {
-        super(source, format);
+        super(source);
+        this.format = format;
         this.query = compileQuery(filters, projects);
         LOG.info("{}", query);
     }
@@ -53,6 +55,11 @@ public class LakeS3SelectProvider extends LakeProvider {
         SelectObjectContentResult result = s3.selectObjectContent(request);
         SelectObjectContentEventStream payload = result.getPayload();
         return payload.getRecordsInputStream();
+    }
+
+    @Override
+    public boolean hasProjectedResults() {
+        return true;
     }
 
     private static InputSerialization getInputSerialization(FormatSpecification spec) {

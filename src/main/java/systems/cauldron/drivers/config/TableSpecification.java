@@ -14,6 +14,13 @@ public class TableSpecification {
     public final FormatSpecification format;
     public final List<ColumnSpecification> columns;
 
+    public TableSpecification(String label, URI location, FormatSpecification format, List<ColumnSpecification> columns) {
+        this.label = label;
+        this.location = location;
+        this.format = format;
+        this.columns = columns;
+    }
+
     public TableSpecification(JsonObject object) {
         this.label = object.getString("label");
         this.location = URI.create(object.getString("location"));

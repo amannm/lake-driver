@@ -9,6 +9,12 @@ public class ColumnSpecification {
     public final String datatype;
     public final Boolean nullable;
 
+    public ColumnSpecification(String label, String datatype, Boolean nullable) {
+        this.label = label;
+        this.datatype = datatype;
+        this.nullable = nullable;
+    }
+
     public ColumnSpecification(JsonObject object) {
         this.label = object.getString("label");
         this.datatype = object.getString("datatype");

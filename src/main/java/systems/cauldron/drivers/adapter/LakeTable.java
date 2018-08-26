@@ -56,20 +56,20 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
 
     @Override
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
-        projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
+        final int[] nonNullProjects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
-        final LakeFieldType[] fieldTypes = generateFieldList(projects);
-        LakeProvider gateway = new LakeS3SelectProvider(source, format, filters, projects);
+        final LakeFieldType[] fieldTypes = generateFieldList();
+        LakeProvider gateway = new LakeS3SelectProvider(source, format, filters, nonNullProjects);
+        //LakeProvider gateway = new LakeS3Provider(source);
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
-                return new LakeTableEnumerator(format, fieldTypes, cancelFlag, gateway);
+                return new LakeTableEnumerator(format, fieldTypes, nonNullProjects, cancelFlag, gateway);
             }
         };
     }
 
-    private LakeFieldType[] generateFieldList(int[] fields) {
-        return IntStream.of(fields).boxed()
-                .map(columns::get)
+    private LakeFieldType[] generateFieldList() {
+        return columns.stream()
                 .map(c -> c.datatype)
                 .map(LakeFieldType::of)
                 .toArray(LakeFieldType[]::new);

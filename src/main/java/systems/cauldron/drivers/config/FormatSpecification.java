@@ -17,6 +17,20 @@ public class FormatSpecification {
     public final NullFieldIndicator nullFieldIndicator;
     public final CompressionType compression;
 
+    public FormatSpecification(char delimiter, String lineSeparator, char quoteChar, char escape, char commentChar, boolean header, boolean strictQuotes, boolean ignoreLeadingWhiteSpace, boolean ignoreQuotations, NullFieldIndicator nullFieldIndicator, CompressionType compression) {
+        this.delimiter = delimiter;
+        this.lineSeparator = lineSeparator;
+        this.quoteChar = quoteChar;
+        this.escape = escape;
+        this.commentChar = commentChar;
+        this.header = header;
+        this.strictQuotes = strictQuotes;
+        this.ignoreLeadingWhiteSpace = ignoreLeadingWhiteSpace;
+        this.ignoreQuotations = ignoreQuotations;
+        this.nullFieldIndicator = nullFieldIndicator;
+        this.compression = compression;
+    }
+
     public FormatSpecification(JsonObject object) {
         this.delimiter = object.getString("delimiter").charAt(0);
         this.lineSeparator = object.getString("lineSeparator");
