@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.net.URI;
 
-public class LakeS3Provider extends LakeProvider {
+public class LakeS3GetProvider extends LakeProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LakeS3Provider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LakeS3GetProvider.class);
 
-    public LakeS3Provider(URI source) {
+    public LakeS3GetProvider(URI source) {
         super(source);
     }
 
