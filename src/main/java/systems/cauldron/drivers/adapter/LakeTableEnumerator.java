@@ -15,7 +15,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 public class LakeTableEnumerator implements Enumerator<Object[]> {
 
@@ -25,9 +24,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
     private final int[] projects;
     private Object[] current;
 
-    private final Function<String[], Object[]> convertRow;
-
-    public LakeTableEnumerator(FormatSpecification readerConfig, LakeFieldType[] fields, int[] projects, AtomicBoolean cancelFlag, LakeProvider gateway) {
+    public LakeTableEnumerator(FormatSpecification readerConfig, AtomicBoolean cancelFlag, LakeProvider gateway) {
         CsvFormat format = new CsvFormat();
         format.setDelimiter(readerConfig.delimiter);
         format.setLineSeparator(readerConfig.lineSeparator);
@@ -39,14 +36,9 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
         this.parser = new CsvParser(parserSettings);
         InputStream data = gateway.fetchSource();
         this.parser.beginParsing(data);
-        this.fieldTypes = fields;
-        this.projects = projects;
+        this.fieldTypes = gateway.getFieldTypes();
+        this.projects = gateway.getProjects();
         this.cancelFlag = cancelFlag;
-        if (gateway.hasProjectedResults()) {
-            this.convertRow = this::convertProjectedRow;
-        } else {
-            this.convertRow = this::convertUnprojectedRow;
-        }
     }
 
     public Object[] current() {
@@ -63,7 +55,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
             parser.stopParsing();
             return false;
         }
-        current = convertRow.apply(strings);
+        current = convertRow(strings);
         return true;
     }
 
@@ -77,19 +69,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
         }
     }
 
-    private Object[] convertProjectedRow(String[] values) {
-        final Object[] result = new Object[projects.length];
-        for (int i = 0; i < projects.length; i++) {
-            String value = values[i];
-            if (value != null) {
-                LakeFieldType type = fieldTypes[projects[i]];
-                result[i] = convert(type, value);
-            }
-        }
-        return result;
-    }
-
-    private Object[] convertUnprojectedRow(String[] values) {
+    private Object[] convertRow(String[] values) {
         final Object[] result = new Object[projects.length];
         for (int i = 0; i < projects.length; i++) {
             int columnIndex = projects[i];
