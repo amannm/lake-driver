@@ -14,7 +14,10 @@ import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.ColumnSpecification;
 import systems.cauldron.drivers.config.FormatSpecification;
 import systems.cauldron.drivers.config.TableSpecification;
+import systems.cauldron.drivers.provider.LakeFilterTranslator;
+import systems.cauldron.drivers.provider.LakeGateway;
 import systems.cauldron.drivers.provider.LakeS3SelectFilterTranslator;
+import systems.cauldron.drivers.provider.LakeS3SelectGateway;
 
 import java.net.URI;
 import java.util.List;
@@ -57,14 +60,16 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
         projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
-        final String s3SelectQuery = LakeS3SelectFilterTranslator.compileS3SelectQuery(filters, projects);
+        LakeFilterTranslator translator = new LakeS3SelectFilterTranslator();
+        final String query = translator.compileQuery(filters, projects);
         final LakeFieldType[] fieldTypes = generateFieldList(projects);
+        LakeGateway gateway = new LakeS3SelectGateway(source, format, query);
 
-        LOG.info("{}", s3SelectQuery);
+        LOG.info("{}", query);
 
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
-                return new LakeTableEnumerator(source, format, s3SelectQuery, fieldTypes, cancelFlag);
+                return new LakeTableEnumerator(format, fieldTypes, cancelFlag, gateway);
             }
         };
     }

@@ -9,33 +9,44 @@ import systems.cauldron.drivers.config.FormatSpecification;
 import java.io.InputStream;
 import java.net.URI;
 
-public class LakeS3SelectGateway {
+public class LakeS3SelectGateway extends LakeGateway {
 
-    public static InputStream fetchSource(URI location, FormatSpecification inputSpecification, String query) {
+    public LakeS3SelectGateway(URI source, FormatSpecification format, String query) {
+        super(source, format, query);
+    }
 
-        //TODO: make async buffered loading (do something. unga bunga. be smurt...)
+    @Override
+    public InputStream fetchSource() {
 
-        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-
-        AmazonS3URI amazonS3URI = new AmazonS3URI(location);
+        AmazonS3URI amazonS3URI = new AmazonS3URI(source);
 
         SelectObjectContentRequest request = new SelectObjectContentRequest();
         request.setBucketName(amazonS3URI.getBucket());
         request.setKey(amazonS3URI.getKey());
         request.setExpression(query);
         request.setExpressionType(ExpressionType.SQL);
+        request.setInputSerialization(getInputSerialization(format));
+        request.setOutputSerialization(getOutputSerialization(format));
+
+        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
+        SelectObjectContentResult result = s3.selectObjectContent(request);
+        SelectObjectContentEventStream payload = result.getPayload();
+        return payload.getRecordsInputStream();
+    }
+
+    private InputSerialization getInputSerialization(FormatSpecification spec) {
 
         CSVInput csvInput = new CSVInput();
-        csvInput.setFieldDelimiter(inputSpecification.delimiter);
-        csvInput.setRecordDelimiter(inputSpecification.lineSeparator);
-        csvInput.setQuoteCharacter(inputSpecification.quoteChar);
-        csvInput.setQuoteEscapeCharacter(inputSpecification.escape);
-        csvInput.setFileHeaderInfo(inputSpecification.header ? FileHeaderInfo.USE : FileHeaderInfo.NONE);
-        csvInput.setComments(inputSpecification.commentChar);
+        csvInput.setFieldDelimiter(spec.delimiter);
+        csvInput.setRecordDelimiter(spec.lineSeparator);
+        csvInput.setQuoteCharacter(spec.quoteChar);
+        csvInput.setQuoteEscapeCharacter(spec.escape);
+        csvInput.setFileHeaderInfo(spec.header ? FileHeaderInfo.USE : FileHeaderInfo.NONE);
+        csvInput.setComments(spec.commentChar);
 
         InputSerialization inputSerialization = new InputSerialization();
         inputSerialization.setCsv(csvInput);
-        switch (inputSpecification.compression) {
+        switch (spec.compression) {
             case GZIP:
                 inputSerialization.setCompressionType(CompressionType.GZIP);
                 break;
@@ -43,21 +54,21 @@ public class LakeS3SelectGateway {
             default:
                 inputSerialization.setCompressionType(CompressionType.NONE);
         }
+        return inputSerialization;
 
-        request.setInputSerialization(inputSerialization);
+    }
+
+    private OutputSerialization getOutputSerialization(FormatSpecification spec) {
 
         CSVOutput csvOutput = new CSVOutput();
-        csvOutput.setFieldDelimiter(inputSpecification.delimiter);
-        csvOutput.setRecordDelimiter(inputSpecification.lineSeparator);
-        csvOutput.setQuoteCharacter(inputSpecification.quoteChar);
-        csvOutput.setQuoteEscapeCharacter(inputSpecification.escape);
+        csvOutput.setFieldDelimiter(spec.delimiter);
+        csvOutput.setRecordDelimiter(spec.lineSeparator);
+        csvOutput.setQuoteCharacter(spec.quoteChar);
+        csvOutput.setQuoteEscapeCharacter(spec.escape);
 
         OutputSerialization outputSerialization = new OutputSerialization();
         outputSerialization.setCsv(csvOutput);
+        return outputSerialization;
 
-        request.setOutputSerialization(outputSerialization);
-
-        SelectObjectContentResult result = s3.selectObjectContent(request);
-        return result.getPayload().getRecordsInputStream();
     }
 }

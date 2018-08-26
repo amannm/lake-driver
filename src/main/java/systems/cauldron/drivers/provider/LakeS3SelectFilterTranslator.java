@@ -15,20 +15,21 @@ import java.util.stream.IntStream;
 import static org.apache.calcite.sql.SqlKind.INPUT_REF;
 import static org.apache.calcite.sql.SqlKind.LITERAL;
 
-public class LakeS3SelectFilterTranslator {
+public class LakeS3SelectFilterTranslator implements LakeFilterTranslator {
 
     //TODO: cover full subset of SQL that Amazon S3 Select currently supports
     //TODO: this part needs a lot of thought and development to avoid bugs and edge case
     //TODO: don't be too aggressive with pushing down filters when you're unsure of its ability to handle weird SQL
-    public static String compileS3SelectQuery(List<RexNode> filters, int[] projects) {
-        String where = compileNativeFilter(filters);
+    @Override
+    public String compileQuery(List<RexNode> filters, int[] projects) {
+        String where = compileNativeFilterString(filters);
         String selectList = IntStream.of(projects).boxed()
                 .map(i -> i + 1).map(i -> "_" + i)
                 .collect(Collectors.joining(", "));
         return String.format("SELECT %s FROM S3Object", selectList) + where;
     }
 
-    private static String compileNativeFilter(List<RexNode> filters) {
+    private static String compileNativeFilterString(List<RexNode> filters) {
 
         List<String> handledFilters = new ArrayList<>();
         List<RexNode> unhandledFilters = new ArrayList<>();
@@ -38,7 +39,7 @@ public class LakeS3SelectFilterTranslator {
             if (RelOptUtil.disjunctions(filter).size() == 1) {
                 List<RexNode> conjunctions = RelOptUtil.conjunctions(filter);
                 for (RexNode conjunction : conjunctions) {
-                    Optional<String> handledFilterString = addFilter(conjunction);
+                    Optional<String> handledFilterString = tryFilterConversion(conjunction);
                     if (handledFilterString.isPresent()) {
                         handledFilters.add(handledFilterString.get());
                     } else {
@@ -59,27 +60,27 @@ public class LakeS3SelectFilterTranslator {
         return " WHERE " + String.join(" AND ", handledFilters);
     }
 
-    private static Optional<String> addFilter(RexNode node) {
+    private static Optional<String> tryFilterConversion(RexNode node) {
         RexCall call = (RexCall) node;
         switch (call.getKind()) {
             case NOT_EQUALS:
-                return compileNativeFilter("<>", call);
+                return tryOperatorFilterConversion("<>", call);
             case EQUALS:
-                return compileNativeFilter("=", call);
+                return tryOperatorFilterConversion("=", call);
             case LESS_THAN:
-                return compileNativeFilter("<", call);
+                return tryOperatorFilterConversion("<", call);
             case LESS_THAN_OR_EQUAL:
-                return compileNativeFilter("<=", call);
+                return tryOperatorFilterConversion("<=", call);
             case GREATER_THAN:
-                return compileNativeFilter(">", call);
+                return tryOperatorFilterConversion(">", call);
             case GREATER_THAN_OR_EQUAL:
-                return compileNativeFilter(">=", call);
+                return tryOperatorFilterConversion(">=", call);
             default:
                 return Optional.empty();
         }
     }
 
-    private static Optional<String> compileNativeFilter(String op, RexCall call) {
+    private static Optional<String> tryOperatorFilterConversion(String op, RexCall call) {
         RexNode originalLeft = call.operands.get(0);
         RexNode originalRight = call.operands.get(1);
 
