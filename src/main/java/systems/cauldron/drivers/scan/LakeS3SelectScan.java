@@ -1,7 +1,5 @@
 package systems.cauldron.drivers.scan;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.*;
 import org.apache.calcite.plan.RelOptUtil;
@@ -25,7 +23,7 @@ import java.util.stream.IntStream;
 import static org.apache.calcite.sql.SqlKind.INPUT_REF;
 import static org.apache.calcite.sql.SqlKind.LITERAL;
 
-public class LakeS3SelectScan extends LakeScan {
+public class LakeS3SelectScan extends LakeS3Scan {
 
     private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectScan.class);
 
@@ -49,12 +47,21 @@ public class LakeS3SelectScan extends LakeScan {
 
     @Override
     public InputStream getSource() {
-        AmazonS3URI amazonS3URI = new AmazonS3URI(source);
-        SelectObjectContentRequest request = getRequest(amazonS3URI, query, format);
-        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-        SelectObjectContentResult result = s3.selectObjectContent(request);
+        SelectObjectContentRequest request = getRequest(s3Source, query, format);
+        SelectObjectContentResult result = s3Client.selectObjectContent(request);
         SelectObjectContentEventStream payload = result.getPayload();
         return payload.getRecordsInputStream();
+    }
+
+    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
+        SelectObjectContentRequest request = new SelectObjectContentRequest();
+        request.setBucketName(uri.getBucket());
+        request.setKey(uri.getKey());
+        request.setExpression(query);
+        request.setExpressionType(ExpressionType.SQL);
+        request.setInputSerialization(getInputSerialization(format));
+        request.setOutputSerialization(getOutputSerialization(format));
+        return request;
     }
 
     private static InputSerialization getInputSerialization(FormatSpec spec) {
@@ -79,17 +86,6 @@ public class LakeS3SelectScan extends LakeScan {
         }
         return inputSerialization;
 
-    }
-
-    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
-        SelectObjectContentRequest request = new SelectObjectContentRequest();
-        request.setBucketName(uri.getBucket());
-        request.setKey(uri.getKey());
-        request.setExpression(query);
-        request.setExpressionType(ExpressionType.SQL);
-        request.setInputSerialization(getInputSerialization(format));
-        request.setOutputSerialization(getOutputSerialization(format));
-        return request;
     }
 
     private static OutputSerialization getOutputSerialization(FormatSpec spec) {
