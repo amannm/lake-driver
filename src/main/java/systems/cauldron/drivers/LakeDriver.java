@@ -2,8 +2,8 @@ package systems.cauldron.drivers;
 
 import systems.cauldron.drivers.adapter.LakeSchemaFactory;
 import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.provider.LakeS3GetScan;
-import systems.cauldron.drivers.provider.LakeScan;
+import systems.cauldron.drivers.scan.LakeS3GetScan;
+import systems.cauldron.drivers.scan.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonArray;

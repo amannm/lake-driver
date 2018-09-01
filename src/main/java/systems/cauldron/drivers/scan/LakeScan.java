@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.provider;
+package systems.cauldron.drivers.scan;
 
 import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
@@ -13,7 +13,7 @@ public abstract class LakeScan {
     final URI source;
     final FormatSpec format;
 
-    LakeScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
+    public LakeScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
         this.types = types;
         this.projects = projects;
         this.source = source;

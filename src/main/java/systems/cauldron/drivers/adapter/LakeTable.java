@@ -11,8 +11,8 @@ import org.apache.calcite.schema.ProjectableFilterableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
 import systems.cauldron.drivers.config.ColumnSpec;
 import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.provider.LakeScan;
-import systems.cauldron.drivers.provider.LakeScanner;
+import systems.cauldron.drivers.scan.LakeScan;
+import systems.cauldron.drivers.scan.LakeScanner;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.provider;
+package systems.cauldron.drivers.scan;
 
 import org.apache.calcite.rex.RexNode;
 import systems.cauldron.drivers.config.TableSpec;

@@ -11,9 +11,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import systems.cauldron.drivers.LakeDriver;
 import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.provider.LakeS3GetScan;
-import systems.cauldron.drivers.provider.LakeS3SelectScan;
-import systems.cauldron.drivers.provider.LakeScan;
+import systems.cauldron.drivers.scan.LakeS3GetScan;
+import systems.cauldron.drivers.scan.LakeS3SelectScan;
+import systems.cauldron.drivers.scan.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonObject;

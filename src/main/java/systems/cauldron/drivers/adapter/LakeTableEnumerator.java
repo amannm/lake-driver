@@ -6,7 +6,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.linq4j.Enumerator;
 import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
-import systems.cauldron.drivers.provider.LakeScan;
+import systems.cauldron.drivers.scan.LakeScan;
 
 import java.time.Instant;
 import java.time.LocalDate;
