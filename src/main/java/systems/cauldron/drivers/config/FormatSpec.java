@@ -3,7 +3,7 @@ package systems.cauldron.drivers.config;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-public class FormatSpecification {
+public class FormatSpec {
 
     public final char delimiter;
     public final String lineSeparator;
@@ -17,7 +17,7 @@ public class FormatSpecification {
     public final NullFieldIndicator nullFieldIndicator;
     public final CompressionType compression;
 
-    public FormatSpecification(char delimiter, String lineSeparator, char quoteChar, char escape, char commentChar, boolean header, boolean strictQuotes, boolean ignoreLeadingWhiteSpace, boolean ignoreQuotations, NullFieldIndicator nullFieldIndicator, CompressionType compression) {
+    public FormatSpec(char delimiter, String lineSeparator, char quoteChar, char escape, char commentChar, boolean header, boolean strictQuotes, boolean ignoreLeadingWhiteSpace, boolean ignoreQuotations, NullFieldIndicator nullFieldIndicator, CompressionType compression) {
         this.delimiter = delimiter;
         this.lineSeparator = lineSeparator;
         this.quoteChar = quoteChar;
@@ -31,7 +31,7 @@ public class FormatSpecification {
         this.compression = compression;
     }
 
-    public FormatSpecification(JsonObject object) {
+    public FormatSpec(JsonObject object) {
         this.delimiter = object.getString("delimiter").charAt(0);
         this.lineSeparator = object.getString("lineSeparator");
         this.quoteChar = object.getString("quoteChar").charAt(0);

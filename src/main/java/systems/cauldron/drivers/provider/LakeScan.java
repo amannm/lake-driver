@@ -1,18 +1,18 @@
 package systems.cauldron.drivers.provider;
 
-import systems.cauldron.drivers.config.TypeSpecification;
+import systems.cauldron.drivers.config.TypeSpec;
 
 import java.io.InputStream;
 import java.net.URI;
 
-public abstract class LakeProvider {
+public abstract class LakeScan {
 
     protected final URI source;
     protected final int[] projects;
-    protected final TypeSpecification[] fieldTypes;
+    protected final TypeSpec[] fieldTypes;
 
 
-    protected LakeProvider(URI source, int[] projects, TypeSpecification[] fieldTypes) {
+    protected LakeScan(TypeSpec[] fieldTypes, int[] projects, URI source) {
         this.source = source;
         this.projects = projects;
         this.fieldTypes = fieldTypes;
@@ -22,7 +22,7 @@ public abstract class LakeProvider {
 
     public abstract int[] getProjects();
 
-    public abstract TypeSpecification[] getFieldTypes();
+    public abstract TypeSpec[] getFieldTypes();
 
 
 }

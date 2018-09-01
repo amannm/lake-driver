@@ -13,8 +13,8 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import systems.cauldron.drivers.config.FormatSpecification;
-import systems.cauldron.drivers.config.TypeSpecification;
+import systems.cauldron.drivers.config.FormatSpec;
+import systems.cauldron.drivers.config.TypeSpec;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -25,15 +25,15 @@ import java.util.stream.IntStream;
 import static org.apache.calcite.sql.SqlKind.INPUT_REF;
 import static org.apache.calcite.sql.SqlKind.LITERAL;
 
-public class LakeS3SelectProvider extends LakeProvider {
+public class LakeS3SelectScan extends LakeScan {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectScan.class);
 
-    private final FormatSpecification format;
+    private final FormatSpec format;
     private final String query;
 
-    public LakeS3SelectProvider(URI source, int[] projects, TypeSpecification[] fieldTypes, FormatSpecification format, List<RexNode> filters) {
-        super(source, projects, fieldTypes);
+    public LakeS3SelectScan(TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters, URI source, FormatSpec format) {
+        super(fieldTypes, projects, source);
         this.format = format;
         this.query = compileQuery(filters, projects);
         LOG.info("{}", query);
@@ -55,11 +55,11 @@ public class LakeS3SelectProvider extends LakeProvider {
     }
 
     @Override
-    public TypeSpecification[] getFieldTypes() {
-        return IntStream.of(projects).boxed().map(i -> fieldTypes[i]).toArray(TypeSpecification[]::new);
+    public TypeSpec[] getFieldTypes() {
+        return IntStream.of(projects).boxed().map(i -> fieldTypes[i]).toArray(TypeSpec[]::new);
     }
 
-    private static InputSerialization getInputSerialization(FormatSpecification spec) {
+    private static InputSerialization getInputSerialization(FormatSpec spec) {
 
         CSVInput csvInput = new CSVInput();
         csvInput.setFieldDelimiter(spec.delimiter);
@@ -83,7 +83,7 @@ public class LakeS3SelectProvider extends LakeProvider {
 
     }
 
-    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpecification format) {
+    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
         SelectObjectContentRequest request = new SelectObjectContentRequest();
         request.setBucketName(uri.getBucket());
         request.setKey(uri.getKey());
@@ -94,7 +94,7 @@ public class LakeS3SelectProvider extends LakeProvider {
         return request;
     }
 
-    private static OutputSerialization getOutputSerialization(FormatSpecification spec) {
+    private static OutputSerialization getOutputSerialization(FormatSpec spec) {
 
         CSVOutput csvOutput = new CSVOutput();
         csvOutput.setFieldDelimiter(spec.delimiter);

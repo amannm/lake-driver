@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public enum TypeSpecification {
+public enum TypeSpec {
 
     STRING(String.class, "string"),
     BOOLEAN(Boolean.class, "boolean"),
@@ -26,9 +26,9 @@ public enum TypeSpecification {
     private final Class clazz;
     private final String stringName;
 
-    private static final Map<String, TypeSpecification> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.stringName, v -> v));
+    private static final Map<String, TypeSpec> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.stringName, v -> v));
 
-    TypeSpecification(Class clazz, String stringName) {
+    TypeSpec(Class clazz, String stringName) {
         this.clazz = clazz;
         this.stringName = stringName;
     }
@@ -37,7 +37,7 @@ public enum TypeSpecification {
         return typeFactory.createJavaType(clazz);
     }
 
-    public static TypeSpecification of(String typeString) {
+    public static TypeSpec of(String typeString) {
         return MAP.get(typeString);
     }
 

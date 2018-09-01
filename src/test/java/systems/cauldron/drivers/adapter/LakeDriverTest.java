@@ -10,10 +10,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import systems.cauldron.drivers.LakeDriver;
-import systems.cauldron.drivers.config.TableSpecification;
-import systems.cauldron.drivers.provider.LakeProvider;
-import systems.cauldron.drivers.provider.LakeS3GetProvider;
-import systems.cauldron.drivers.provider.LakeS3SelectProvider;
+import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.provider.LakeS3GetScan;
+import systems.cauldron.drivers.provider.LakeS3SelectScan;
+import systems.cauldron.drivers.provider.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -58,42 +58,42 @@ public class LakeDriverTest {
 
     @Test
     public void oneTableSimpleFilterS3Select() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectProvider.class, generateTableSpecifications("people"), TEST_QUERY_A);
+        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
         assertEquals(TEST_RESULT_A, resultString);
     }
 
     @Test
     public void oneTableComplexFilterS3Select() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectProvider.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
         assertEquals(TEST_RESULT_B, resultString);
     }
 
     @Test
     public void twoTableSimpleJoinS3Select() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectProvider.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
         assertEquals(TEST_RESULT_C, resultString);
     }
 
     @Test
     public void oneTableSimpleFilterS3Get() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3GetProvider.class, generateTableSpecifications("people"), TEST_QUERY_A);
+        String resultString = executeTaskAndGetResult(LakeS3GetScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
         assertEquals(TEST_RESULT_A, resultString);
     }
 
     @Test
     public void oneTableComplexFilterS3Get() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3GetProvider.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+        String resultString = executeTaskAndGetResult(LakeS3GetScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
         assertEquals(TEST_RESULT_B, resultString);
     }
 
     @Test
     public void twoTableSimpleJoinS3Get() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3GetProvider.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+        String resultString = executeTaskAndGetResult(LakeS3GetScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
         assertEquals(TEST_RESULT_C, resultString);
     }
 
 
-    private static String executeTaskAndGetResult(Class<? extends LakeProvider> clazz, List<TableSpecification> tables, String sqlScript) throws IOException {
+    private static String executeTaskAndGetResult(Class<? extends LakeScan> clazz, List<TableSpec> tables, String sqlScript) throws IOException {
         Path localResult = Files.createTempFile(null, null);
         queryToFile(clazz, tables, sqlScript, localResult);
         String result = Files.lines(localResult, StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
@@ -101,10 +101,10 @@ public class LakeDriverTest {
         return result;
     }
 
-    private static void queryToFile(Class<? extends LakeProvider> clazz, List<TableSpecification> tableSpecifications, String sqlScript, Path destination) {
+    private static void queryToFile(Class<? extends LakeScan> clazz, List<TableSpec> tableSpecs, String sqlScript, Path destination) {
 
         List<String> records = new ArrayList<>();
-        try (Connection connection = LakeDriver.getConnection(tableSpecifications, clazz)) {
+        try (Connection connection = LakeDriver.getConnection(tableSpecs, clazz)) {
             try (PreparedStatement statement = connection.prepareStatement(sqlScript)) {
                 ResultSetMetaData metaData = statement.getMetaData();
                 int limit = metaData.getColumnCount();
@@ -131,13 +131,13 @@ public class LakeDriverTest {
 
     }
 
-    private static List<TableSpecification> generateTableSpecifications(String... keys) throws IOException {
-        List<TableSpecification> builder = new ArrayList<>();
+    private static List<TableSpec> generateTableSpecifications(String... keys) throws IOException {
+        List<TableSpec> builder = new ArrayList<>();
         for (String tableName : keys) {
             Path inputConfig = Paths.get("src", "test", "resources", tableName + ".json");
             try (JsonReader reader = Json.createReader(Files.newBufferedReader(inputConfig, StandardCharsets.UTF_8))) {
                 JsonObject jsonObject = reader.readObject();
-                TableSpecification spec = new TableSpecification(jsonObject);
+                TableSpec spec = new TableSpec(jsonObject);
                 builder.add(spec);
             }
         }

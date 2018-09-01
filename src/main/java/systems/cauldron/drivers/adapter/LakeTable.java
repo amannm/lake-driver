@@ -11,12 +11,12 @@ import org.apache.calcite.schema.ProjectableFilterableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import systems.cauldron.drivers.config.ColumnSpecification;
-import systems.cauldron.drivers.config.FormatSpecification;
-import systems.cauldron.drivers.config.TableSpecification;
-import systems.cauldron.drivers.config.TypeSpecification;
-import systems.cauldron.drivers.provider.LakeProvider;
-import systems.cauldron.drivers.provider.LakeProviderFactory;
+import systems.cauldron.drivers.config.ColumnSpec;
+import systems.cauldron.drivers.config.FormatSpec;
+import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.provider.LakeScan;
+import systems.cauldron.drivers.provider.LakeScanner;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,17 +28,19 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private static final Logger LOG = LoggerFactory.getLogger(LakeTable.class);
 
     private final String label;
-    private final ColumnSpecification[] columns;
-    private final FormatSpecification format;
-    private final LakeProviderFactory providerFactory;
-    private final TypeSpecification[] allFieldTypes;
+    private final ColumnSpec[] columns;
+    private final FormatSpec format;
+    private final LakeScanner scanner;
+    private final TypeSpec[] types;
+    private final int[] defaultProjects;
 
-    public LakeTable(LakeProviderFactory providerFactory, TableSpecification specification) {
-        this.label = specification.label.toUpperCase();
-        this.columns = specification.columns.toArray(new ColumnSpecification[0]);
-        this.format = specification.format;
-        this.providerFactory = providerFactory;
-        this.allFieldTypes = specification.columns.stream().map(c -> c.datatype).toArray(TypeSpecification[]::new);
+    public LakeTable(Class<?> scanClass, TableSpec spec) {
+        this.label = spec.label.toUpperCase();
+        this.columns = spec.columns.toArray(new ColumnSpec[0]);
+        this.format = spec.format;
+        this.scanner = LakeScanner.create(scanClass, spec);
+        this.types = spec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
+        this.defaultProjects = IntStream.range(0, columns.length).toArray();
     }
 
     public String getLabel() {
@@ -48,7 +50,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     @Override
     public RelDataType getRowType(RelDataTypeFactory typeFactory) {
         RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
-        for (ColumnSpecification c : columns) {
+        for (ColumnSpec c : columns) {
             RelDataType relDataType = c.datatype.toType(typeFactory);
             builder.add(c.label.toUpperCase(), relDataType);
             builder.nullable(c.nullable == null || c.nullable);
@@ -58,12 +60,17 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
 
     @Override
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
-        projects = projects == null ? IntStream.range(0, columns.length).toArray() : projects;
+
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
-        LakeProvider provider = providerFactory.build(filters, projects, allFieldTypes);
+
+        //TODO: what does it _really_ mean when Calcite passes null projects here?
+        projects = (projects == null) ? defaultProjects : projects;
+
+        final LakeScan scan = scanner.scan(types, projects, filters);
+
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
-                return new LakeTableEnumerator(format, cancelFlag, provider);
+                return new LakeTableEnumerator(format, cancelFlag, scan);
             }
         };
     }

@@ -7,33 +7,33 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TableSpecification {
+public class TableSpec {
 
     public final String label;
     public final URI location;
-    public final FormatSpecification format;
-    public final List<ColumnSpecification> columns;
+    public final FormatSpec format;
+    public final List<ColumnSpec> columns;
 
-    public TableSpecification(String label, URI location, FormatSpecification format, List<ColumnSpecification> columns) {
+    public TableSpec(String label, URI location, FormatSpec format, List<ColumnSpec> columns) {
         this.label = label;
         this.location = location;
         this.format = format;
         this.columns = columns;
     }
 
-    public TableSpecification(JsonObject object) {
+    public TableSpec(JsonObject object) {
         this.label = object.getString("label");
         this.location = URI.create(object.getString("location"));
-        this.format = new FormatSpecification(object.getJsonObject("format"));
+        this.format = new FormatSpec(object.getJsonObject("format"));
         this.columns = object.getJsonArray("columns").stream()
                 .map(v -> (JsonObject) v)
-                .map(ColumnSpecification::new)
+                .map(ColumnSpec::new)
                 .collect(Collectors.toList());
     }
 
     public JsonObject toJson() {
         JsonArrayBuilder columnsJson = Json.createArrayBuilder();
-        columns.stream().map(ColumnSpecification::toJson).forEach(columnsJson::add);
+        columns.stream().map(ColumnSpec::toJson).forEach(columnsJson::add);
         return Json.createObjectBuilder()
                 .add("label", label)
                 .add("location", location.toString())

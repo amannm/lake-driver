@@ -3,21 +3,21 @@ package systems.cauldron.drivers.config;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-public class ColumnSpecification {
+public class ColumnSpec {
 
     public final String label;
-    public final TypeSpecification datatype;
+    public final TypeSpec datatype;
     public final Boolean nullable;
 
-    public ColumnSpecification(String label, TypeSpecification datatype, Boolean nullable) {
+    public ColumnSpec(String label, TypeSpec datatype, Boolean nullable) {
         this.label = label;
         this.datatype = datatype;
         this.nullable = nullable;
     }
 
-    public ColumnSpecification(JsonObject object) {
+    public ColumnSpec(JsonObject object) {
         this.label = object.getString("label");
-        this.datatype = TypeSpecification.of(object.getString("datatype"));
+        this.datatype = TypeSpec.of(object.getString("datatype"));
         this.nullable = object.getBoolean("nullable");
     }
 

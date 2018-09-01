@@ -4,9 +4,9 @@ import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.linq4j.Enumerator;
-import systems.cauldron.drivers.config.FormatSpecification;
-import systems.cauldron.drivers.config.TypeSpecification;
-import systems.cauldron.drivers.provider.LakeProvider;
+import systems.cauldron.drivers.config.FormatSpec;
+import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.provider.LakeScan;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -20,16 +20,16 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
 
     private final CsvParser parser;
     private final AtomicBoolean cancelFlag;
-    private final TypeSpecification[] fieldTypes;
+    private final TypeSpec[] fieldTypes;
     private final int[] projects;
     private Object[] current;
 
-    public LakeTableEnumerator(FormatSpecification readerConfig, AtomicBoolean cancelFlag, LakeProvider provider) {
-        this.fieldTypes = provider.getFieldTypes();
-        this.projects = provider.getProjects();
+    public LakeTableEnumerator(FormatSpec readerConfig, AtomicBoolean cancelFlag, LakeScan scan) {
+        this.fieldTypes = scan.getFieldTypes();
+        this.projects = scan.getProjects();
         this.cancelFlag = cancelFlag;
         this.parser = new CsvParser(getParserSettings(readerConfig));
-        this.parser.beginParsing(provider.fetchSource());
+        this.parser.beginParsing(scan.fetchSource());
     }
 
     public Object[] current() {
@@ -66,14 +66,14 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
             int columnIndex = projects[i];
             String value = values[columnIndex];
             if (value != null) {
-                TypeSpecification type = fieldTypes[columnIndex];
+                TypeSpec type = fieldTypes[columnIndex];
                 result[i] = convert(type, value);
             }
         }
         return result;
     }
 
-    private static Object convert(TypeSpecification fieldType, String string) throws NumberFormatException, DateTimeParseException {
+    private static Object convert(TypeSpec fieldType, String string) throws NumberFormatException, DateTimeParseException {
         switch (fieldType) {
             case STRING:
             case CHARACTER:
@@ -105,7 +105,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
         }
     }
 
-    private static CsvParserSettings getParserSettings(FormatSpecification readerConfig) {
+    private static CsvParserSettings getParserSettings(FormatSpec readerConfig) {
         CsvFormat format = new CsvFormat();
         format.setDelimiter(readerConfig.delimiter);
         format.setLineSeparator(readerConfig.lineSeparator);

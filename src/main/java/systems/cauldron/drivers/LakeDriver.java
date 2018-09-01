@@ -1,9 +1,9 @@
 package systems.cauldron.drivers;
 
 import systems.cauldron.drivers.adapter.LakeSchemaFactory;
-import systems.cauldron.drivers.config.TableSpecification;
-import systems.cauldron.drivers.provider.LakeProvider;
-import systems.cauldron.drivers.provider.LakeS3GetProvider;
+import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.provider.LakeS3GetScan;
+import systems.cauldron.drivers.provider.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -24,19 +24,19 @@ public class LakeDriver {
         }
     }
 
-    public static Connection getConnection(List<TableSpecification> tables) throws SQLException {
-        return getConnection(tables, LakeS3GetProvider.class);
+    public static Connection getConnection(List<TableSpec> tables) throws SQLException {
+        return getConnection(tables, LakeS3GetScan.class);
     }
 
-    public static Connection getConnection(List<TableSpecification> tables, Class<? extends LakeProvider> providerClass) throws SQLException {
+    public static Connection getConnection(List<TableSpec> tables, Class<? extends LakeScan> scanClass) throws SQLException {
 
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        tables.stream().map(TableSpecification::toJson).forEach(jsonArrayBuilder::add);
+        tables.stream().map(TableSpec::toJson).forEach(jsonArrayBuilder::add);
         JsonArray build = jsonArrayBuilder.build();
         String tableSpecificationsString = build.toString();
 
         String schemaFactoryName = LakeSchemaFactory.class.getName();
-        String providerName = providerClass.getName();
+        String scanClassName = scanClass.getName();
 
         JsonObject modelJson = Json.createObjectBuilder()
                 .add("version", "1.0")
@@ -47,8 +47,8 @@ public class LakeDriver {
                                 .add("type", "custom")
                                 .add("factory", schemaFactoryName)
                                 .add("operand", Json.createObjectBuilder()
-                                        .add("provider", providerName)
-                                        .add("inputTables", tableSpecificationsString))))
+                                        .add("scan", scanClassName)
+                                        .add("inputs", tableSpecificationsString))))
                 .build();
 
         return DriverManager.getConnection("jdbc:calcite:model=inline:" + modelJson);
