@@ -8,7 +8,7 @@ import systems.cauldron.drivers.config.TypeSpec;
 
 import java.net.URI;
 
-public abstract class LakeS3Scan extends LakeScan {
+abstract class LakeS3Scan extends LakeScan {
 
     final AmazonS3URI s3Source = new AmazonS3URI(source);
     final AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();

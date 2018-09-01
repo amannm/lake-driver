@@ -13,7 +13,7 @@ public abstract class LakeScan {
     final URI source;
     final FormatSpec format;
 
-    public LakeScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
+    LakeScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
         this.types = types;
         this.projects = projects;
         this.source = source;
