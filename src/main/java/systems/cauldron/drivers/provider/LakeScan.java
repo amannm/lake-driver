@@ -1,5 +1,6 @@
 package systems.cauldron.drivers.provider;
 
+import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
 
 import java.io.InputStream;
@@ -7,22 +8,30 @@ import java.net.URI;
 
 public abstract class LakeScan {
 
-    protected final URI source;
-    protected final int[] projects;
-    protected final TypeSpec[] fieldTypes;
+    final TypeSpec[] types;
+    final int[] projects;
+    final URI source;
+    final FormatSpec format;
 
-
-    protected LakeScan(TypeSpec[] fieldTypes, int[] projects, URI source) {
-        this.source = source;
+    LakeScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
+        this.types = types;
         this.projects = projects;
-        this.fieldTypes = fieldTypes;
+        this.source = source;
+        this.format = format;
     }
 
-    public abstract InputStream fetchSource();
+    public TypeSpec[] getTypes() {
+        return types;
+    }
 
-    public abstract int[] getProjects();
+    public int[] getProjects() {
+        return projects;
+    }
 
-    public abstract TypeSpec[] getFieldTypes();
+    public abstract InputStream getSource();
 
+    public FormatSpec getFormat() {
+        return format;
+    }
 
 }

@@ -5,10 +5,9 @@ import systems.cauldron.drivers.config.TableSpec;
 import systems.cauldron.drivers.config.TypeSpec;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
-public interface LakeScanner {
-
-    LakeScan scan(int[] projects, List<RexNode> filters);
+public interface LakeScanner extends BiFunction<int[], List<RexNode>, LakeScan> {
 
     static LakeScanner create(Class<?> providerClass, TableSpec spec) {
         TypeSpec[] fields = spec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
@@ -25,7 +24,8 @@ public interface LakeScanner {
             return (projects, filters) -> new LakeS3GetScan(
                     fields,
                     projects,
-                    spec.location
+                    spec.location,
+                    spec.format
             );
         }
         throw new IllegalArgumentException("encountered unknown provider class: " + providerClass.getName());

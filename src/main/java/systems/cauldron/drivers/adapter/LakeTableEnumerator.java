@@ -18,18 +18,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LakeTableEnumerator implements Enumerator<Object[]> {
 
-    private final CsvParser parser;
-    private final AtomicBoolean cancelFlag;
     private final TypeSpec[] fieldTypes;
     private final int[] projects;
+
+    private final AtomicBoolean cancelFlag;
+    private final CsvParser parser;
+
     private Object[] current;
 
-    public LakeTableEnumerator(FormatSpec readerConfig, AtomicBoolean cancelFlag, LakeScan scan) {
-        this.fieldTypes = scan.getFieldTypes();
+    public LakeTableEnumerator(LakeScan scan, AtomicBoolean cancelFlag) {
+        this.fieldTypes = scan.getTypes();
         this.projects = scan.getProjects();
         this.cancelFlag = cancelFlag;
-        this.parser = new CsvParser(getParserSettings(readerConfig));
-        this.parser.beginParsing(scan.fetchSource());
+        this.parser = new CsvParser(getParserSettings(scan.getFormat()));
+        this.parser.beginParsing(scan.getSource());
     }
 
     public Object[] current() {
@@ -76,8 +78,13 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
     private static Object convert(TypeSpec fieldType, String string) throws NumberFormatException, DateTimeParseException {
         switch (fieldType) {
             case STRING:
-            case CHARACTER:
                 return string;
+            case CHARACTER:
+                if (string.length() == 1) {
+                    return string.charAt(0);
+                } else {
+                    throw new IllegalArgumentException("invalid char string value: '" + string + "'");
+                }
             case BOOLEAN:
                 return Boolean.parseBoolean(string);
             case BYTE:
@@ -105,15 +112,15 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
         }
     }
 
-    private static CsvParserSettings getParserSettings(FormatSpec readerConfig) {
+    private static CsvParserSettings getParserSettings(FormatSpec spec) {
         CsvFormat format = new CsvFormat();
-        format.setDelimiter(readerConfig.delimiter);
-        format.setLineSeparator(readerConfig.lineSeparator);
-        format.setQuote(readerConfig.quoteChar);
-        format.setQuoteEscape(readerConfig.escape);
+        format.setDelimiter(spec.delimiter);
+        format.setLineSeparator(spec.lineSeparator);
+        format.setQuote(spec.quoteChar);
+        format.setQuoteEscape(spec.escape);
         CsvParserSettings parserSettings = new CsvParserSettings();
         parserSettings.setFormat(format);
-        parserSettings.setHeaderExtractionEnabled(readerConfig.header);
+        parserSettings.setHeaderExtractionEnabled(spec.header);
         return parserSettings;
     }
 

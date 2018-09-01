@@ -29,24 +29,17 @@ public class LakeS3SelectScan extends LakeScan {
 
     private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectScan.class);
 
-    private final FormatSpec format;
     private final String query;
 
-    public LakeS3SelectScan(TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters, URI source, FormatSpec format) {
-        super(fieldTypes, projects, source);
-        this.format = format;
+    LakeS3SelectScan(TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters, URI source, FormatSpec format) {
+        super(fieldTypes, projects, source, format);
         this.query = compileQuery(filters, projects);
         LOG.info("{}", query);
     }
 
     @Override
-    public InputStream fetchSource() {
-        AmazonS3URI amazonS3URI = new AmazonS3URI(source);
-        SelectObjectContentRequest request = getRequest(amazonS3URI, query, format);
-        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-        SelectObjectContentResult result = s3.selectObjectContent(request);
-        SelectObjectContentEventStream payload = result.getPayload();
-        return payload.getRecordsInputStream();
+    public TypeSpec[] getTypes() {
+        return IntStream.of(projects).boxed().map(i -> types[i]).toArray(TypeSpec[]::new);
     }
 
     @Override
@@ -55,8 +48,13 @@ public class LakeS3SelectScan extends LakeScan {
     }
 
     @Override
-    public TypeSpec[] getFieldTypes() {
-        return IntStream.of(projects).boxed().map(i -> fieldTypes[i]).toArray(TypeSpec[]::new);
+    public InputStream getSource() {
+        AmazonS3URI amazonS3URI = new AmazonS3URI(source);
+        SelectObjectContentRequest request = getRequest(amazonS3URI, query, format);
+        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
+        SelectObjectContentResult result = s3.selectObjectContent(request);
+        SelectObjectContentEventStream payload = result.getPayload();
+        return payload.getRecordsInputStream();
     }
 
     private static InputSerialization getInputSerialization(FormatSpec spec) {
