@@ -8,23 +8,24 @@ import java.util.List;
 
 public interface LakeScanner {
 
-    LakeScan scan(TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters);
+    LakeScan scan(int[] projects, List<RexNode> filters);
 
-    static LakeScanner create(Class<?> providerClass, TableSpec specification) {
+    static LakeScanner create(Class<?> providerClass, TableSpec spec) {
+        TypeSpec[] fields = spec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
         if (LakeS3SelectScan.class.equals(providerClass)) {
-            return (fieldTypes, projects, filters) -> new LakeS3SelectScan(
-                    fieldTypes,
+            return (projects, filters) -> new LakeS3SelectScan(
+                    fields,
                     projects,
                     filters,
-                    specification.location,
-                    specification.format
+                    spec.location,
+                    spec.format
             );
         }
         if (LakeS3GetScan.class.equals(providerClass)) {
-            return (fieldTypes, projects, filters) -> new LakeS3GetScan(
-                    fieldTypes,
+            return (projects, filters) -> new LakeS3GetScan(
+                    fields,
                     projects,
-                    specification.location
+                    spec.location
             );
         }
         throw new IllegalArgumentException("encountered unknown provider class: " + providerClass.getName());

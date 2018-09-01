@@ -6,6 +6,7 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.provider.LakeScanner;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -35,7 +36,10 @@ public class LakeSchemaFactory implements SchemaFactory {
         List<LakeTable> tables = inputTables.stream()
                 .map(v -> (JsonObject) v)
                 .map(TableSpec::new)
-                .map(s -> new LakeTable(scanClass, s))
+                .map(spec -> {
+                    LakeScanner scanner = LakeScanner.create(scanClass, spec);
+                    return new LakeTable(scanner, spec);
+                })
                 .collect(Collectors.toList());
 
         return new LakeSchema(tables);

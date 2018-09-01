@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.ColumnSpec;
 import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.config.TypeSpec;
 import systems.cauldron.drivers.provider.LakeScan;
 import systems.cauldron.drivers.provider.LakeScanner;
 
@@ -31,15 +30,13 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private final ColumnSpec[] columns;
     private final FormatSpec format;
     private final LakeScanner scanner;
-    private final TypeSpec[] types;
     private final int[] defaultProjects;
 
-    public LakeTable(Class<?> scanClass, TableSpec spec) {
+    public LakeTable(LakeScanner scanner, TableSpec spec) {
         this.label = spec.label.toUpperCase();
         this.columns = spec.columns.toArray(new ColumnSpec[0]);
         this.format = spec.format;
-        this.scanner = LakeScanner.create(scanClass, spec);
-        this.types = spec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
+        this.scanner = scanner;
         this.defaultProjects = IntStream.range(0, columns.length).toArray();
     }
 
@@ -66,7 +63,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
         //TODO: what does it _really_ mean when Calcite passes null projects here?
         projects = (projects == null) ? defaultProjects : projects;
 
-        final LakeScan scan = scanner.scan(types, projects, filters);
+        final LakeScan scan = scanner.scan(projects, filters);
 
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
