@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.config;
 
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
@@ -7,8 +7,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-//TODO: don't invent new meta-config-language-stuff
-public enum LakeFieldType {
+public enum TypeSpecification {
 
     STRING(String.class, "string"),
     BOOLEAN(Boolean.class, "boolean"),
@@ -27,9 +26,9 @@ public enum LakeFieldType {
     private final Class clazz;
     private final String simpleName;
 
-    private static final Map<String, LakeFieldType> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.simpleName, v -> v));
+    private static final Map<String, TypeSpecification> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.simpleName, v -> v));
 
-    LakeFieldType(Class clazz, String simpleName) {
+    TypeSpecification(Class clazz, String simpleName) {
         this.clazz = clazz;
         this.simpleName = simpleName;
     }
@@ -38,7 +37,7 @@ public enum LakeFieldType {
         return typeFactory.createJavaType(clazz);
     }
 
-    public static LakeFieldType of(String typeString) {
+    public static TypeSpecification of(String typeString) {
         return MAP.get(typeString);
     }
 }

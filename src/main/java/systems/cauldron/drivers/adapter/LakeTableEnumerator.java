@@ -5,6 +5,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.linq4j.Enumerator;
 import systems.cauldron.drivers.config.FormatSpecification;
+import systems.cauldron.drivers.config.TypeSpecification;
 import systems.cauldron.drivers.provider.LakeProvider;
 
 import java.time.Instant;
@@ -19,7 +20,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
 
     private final CsvParser parser;
     private final AtomicBoolean cancelFlag;
-    private final LakeFieldType[] fieldTypes;
+    private final TypeSpecification[] fieldTypes;
     private final int[] projects;
     private Object[] current;
 
@@ -73,14 +74,14 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
             int columnIndex = projects[i];
             String value = values[columnIndex];
             if (value != null) {
-                LakeFieldType type = fieldTypes[columnIndex];
+                TypeSpecification type = fieldTypes[columnIndex];
                 result[i] = convert(type, value);
             }
         }
         return result;
     }
 
-    private static Object convert(LakeFieldType fieldType, String string) throws NumberFormatException, DateTimeParseException {
+    private static Object convert(TypeSpecification fieldType, String string) throws NumberFormatException, DateTimeParseException {
         switch (fieldType) {
             case STRING:
             case CHARACTER:

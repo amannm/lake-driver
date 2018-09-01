@@ -1,6 +1,6 @@
 package systems.cauldron.drivers.provider;
 
-import systems.cauldron.drivers.adapter.LakeFieldType;
+import systems.cauldron.drivers.config.TypeSpecification;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -9,10 +9,10 @@ public abstract class LakeProvider {
 
     protected final URI source;
     protected final int[] projects;
-    protected final LakeFieldType[] fieldTypes;
+    protected final TypeSpecification[] fieldTypes;
 
 
-    protected LakeProvider(URI source, int[] projects, LakeFieldType[] fieldTypes) {
+    protected LakeProvider(URI source, int[] projects, TypeSpecification[] fieldTypes) {
         this.source = source;
         this.projects = projects;
         this.fieldTypes = fieldTypes;
@@ -22,7 +22,7 @@ public abstract class LakeProvider {
 
     public abstract int[] getProjects();
 
-    public abstract LakeFieldType[] getFieldTypes();
+    public abstract TypeSpecification[] getFieldTypes();
 
 
 }

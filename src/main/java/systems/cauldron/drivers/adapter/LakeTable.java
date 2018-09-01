@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.ColumnSpecification;
 import systems.cauldron.drivers.config.FormatSpecification;
 import systems.cauldron.drivers.config.TableSpecification;
+import systems.cauldron.drivers.config.TypeSpecification;
 import systems.cauldron.drivers.provider.LakeProvider;
 import systems.cauldron.drivers.provider.LakeProviderFactory;
 
@@ -46,7 +47,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     public RelDataType getRowType(RelDataTypeFactory typeFactory) {
         RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
         for (ColumnSpecification c : columns) {
-            RelDataType relDataType = LakeFieldType.of(c.datatype).toType(typeFactory);
+            RelDataType relDataType = TypeSpecification.of(c.datatype).toType(typeFactory);
             builder.add(c.label.toUpperCase(), relDataType);
             builder.nullable(c.nullable == null || c.nullable);
         }
@@ -56,10 +57,10 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     @Override
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
-        final LakeFieldType[] allFieldTypes = columns.stream()
+        final TypeSpecification[] allFieldTypes = columns.stream()
                 .map(c -> c.datatype)
-                .map(LakeFieldType::of)
-                .toArray(LakeFieldType[]::new);
+                .map(TypeSpecification::of)
+                .toArray(TypeSpecification[]::new);
         projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
         LakeProvider provider = providerFactory.build(filters, projects, allFieldTypes);
         return new AbstractEnumerable<>() {

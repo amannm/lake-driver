@@ -13,8 +13,8 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import systems.cauldron.drivers.adapter.LakeFieldType;
 import systems.cauldron.drivers.config.FormatSpecification;
+import systems.cauldron.drivers.config.TypeSpecification;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -32,7 +32,7 @@ public class LakeS3SelectProvider extends LakeProvider {
     private final FormatSpecification format;
     private final String query;
 
-    public LakeS3SelectProvider(URI source, int[] projects, LakeFieldType[] fieldTypes, FormatSpecification format, List<RexNode> filters) {
+    public LakeS3SelectProvider(URI source, int[] projects, TypeSpecification[] fieldTypes, FormatSpecification format, List<RexNode> filters) {
         super(source, projects, fieldTypes);
         this.format = format;
         this.query = compileQuery(filters, projects);
@@ -64,8 +64,8 @@ public class LakeS3SelectProvider extends LakeProvider {
     }
 
     @Override
-    public LakeFieldType[] getFieldTypes() {
-        return IntStream.of(projects).boxed().map(i -> fieldTypes[i]).toArray(LakeFieldType[]::new);
+    public TypeSpecification[] getFieldTypes() {
+        return IntStream.of(projects).boxed().map(i -> fieldTypes[i]).toArray(TypeSpecification[]::new);
     }
 
     private static InputSerialization getInputSerialization(FormatSpecification spec) {

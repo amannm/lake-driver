@@ -6,7 +6,7 @@ import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.S3Object;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import systems.cauldron.drivers.adapter.LakeFieldType;
+import systems.cauldron.drivers.config.TypeSpecification;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -15,7 +15,7 @@ public class LakeS3GetProvider extends LakeProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(LakeS3GetProvider.class);
 
-    public LakeS3GetProvider(URI source, int[] projects, LakeFieldType[] fieldTypes) {
+    public LakeS3GetProvider(URI source, int[] projects, TypeSpecification[] fieldTypes) {
         super(source, projects, fieldTypes);
     }
 
@@ -33,7 +33,7 @@ public class LakeS3GetProvider extends LakeProvider {
     }
 
     @Override
-    public LakeFieldType[] getFieldTypes() {
+    public TypeSpecification[] getFieldTypes() {
         return fieldTypes;
     }
 

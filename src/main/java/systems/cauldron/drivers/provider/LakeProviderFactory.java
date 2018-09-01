@@ -1,14 +1,14 @@
 package systems.cauldron.drivers.provider;
 
 import org.apache.calcite.rex.RexNode;
-import systems.cauldron.drivers.adapter.LakeFieldType;
 import systems.cauldron.drivers.config.TableSpecification;
+import systems.cauldron.drivers.config.TypeSpecification;
 
 import java.util.List;
 
 public interface LakeProviderFactory {
 
-    LakeProvider build(List<RexNode> filters, int[] projects, LakeFieldType[] fieldTypes);
+    LakeProvider build(List<RexNode> filters, int[] projects, TypeSpecification[] fieldTypes);
 
     static LakeProviderFactory create(Class<?> providerClass, TableSpecification specification) {
         if (LakeS3SelectProvider.class.equals(providerClass)) {
