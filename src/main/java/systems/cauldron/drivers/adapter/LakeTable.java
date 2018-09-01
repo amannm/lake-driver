@@ -9,8 +9,6 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.ProjectableFilterableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.ColumnSpec;
 import systems.cauldron.drivers.config.TableSpec;
 import systems.cauldron.drivers.provider.LakeScan;
@@ -23,15 +21,13 @@ import java.util.stream.IntStream;
 
 public class LakeTable extends AbstractTable implements ProjectableFilterableTable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LakeTable.class);
-
     private final ColumnSpec[] columns;
     private final LakeScanner scanner;
     private final int[] defaultProjects;
 
-    public LakeTable(LakeScanner scanner, TableSpec spec) {
+    LakeTable(Class<?> scanClass, TableSpec spec) {
         this.columns = spec.columns.toArray(new ColumnSpec[0]);
-        this.scanner = scanner;
+        this.scanner = LakeScanner.create(scanClass, spec);
         this.defaultProjects = IntStream.range(0, columns.length).toArray();
     }
 
@@ -48,14 +44,9 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
 
     @Override
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
-
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
-
-        //TODO: what does it _really_ mean when Calcite passes null projects here?
         projects = (projects == null) ? defaultProjects : projects;
-
         final LakeScan scan = scanner.apply(projects, filters);
-
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
                 return new LakeTableEnumerator(scan, cancelFlag);

@@ -26,7 +26,7 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
 
     private Object[] current;
 
-    public LakeTableEnumerator(LakeScan scan, AtomicBoolean cancelFlag) {
+    LakeTableEnumerator(LakeScan scan, AtomicBoolean cancelFlag) {
         this.fieldTypes = scan.getTypes();
         this.projects = scan.getProjects();
         this.cancelFlag = cancelFlag;

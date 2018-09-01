@@ -4,10 +4,8 @@ import org.apache.calcite.schema.Schema;
 import org.apache.calcite.schema.SchemaFactory;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.calcite.schema.impl.AbstractSchema;
 import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.provider.LakeScanner;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -19,8 +17,6 @@ import java.util.stream.Collectors;
 
 public class LakeSchemaFactory implements SchemaFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LakeSchemaFactory.class);
-
     public static final LakeSchemaFactory INSTANCE = new LakeSchemaFactory();
 
     public LakeSchemaFactory() {
@@ -30,20 +26,29 @@ public class LakeSchemaFactory implements SchemaFactory {
     public Schema create(SchemaPlus parentSchema, String name, Map<String, Object> operand) {
 
         Class<?> scanClass = extractScanOperand(operand);
-
-        JsonArray inputTables = extractInputTablesOperand(operand);
+        JsonArray inputTables = extractInputsOperand(operand);
 
         Map<String, Table> tableMap = inputTables.stream()
                 .map(v -> (JsonObject) v)
                 .map(TableSpec::new)
                 .collect(Collectors.toMap(
                         spec -> spec.label.toUpperCase(),
-                        spec -> {
-                            LakeScanner scanner = LakeScanner.create(scanClass, spec);
-                            return new LakeTable(scanner, spec);
-                        }));
+                        spec -> new LakeTable(scanClass, spec)));
 
-        return new LakeSchema(tableMap);
+        return new AbstractSchema() {
+
+            @Override
+            public boolean isMutable() {
+                return false;
+            }
+
+            @Override
+            protected Map<String, Table> getTableMap() {
+                return tableMap;
+            }
+
+        };
+
     }
 
     private Class<?> extractScanOperand(Map<String, Object> operand) {
@@ -55,7 +60,7 @@ public class LakeSchemaFactory implements SchemaFactory {
         }
     }
 
-    private JsonArray extractInputTablesOperand(Map<String, Object> operand) {
+    private JsonArray extractInputsOperand(Map<String, Object> operand) {
         String value = (String) operand.get("inputs");
         try (JsonReader reader = Json.createReader(new StringReader(value))) {
             return reader.readArray();
