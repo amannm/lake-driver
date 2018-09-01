@@ -28,15 +28,17 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     private static final Logger LOG = LoggerFactory.getLogger(LakeTable.class);
 
     private final String label;
-    private final List<ColumnSpecification> columns;
+    private final ColumnSpecification[] columns;
     private final FormatSpecification format;
     private final LakeProviderFactory providerFactory;
+    private final TypeSpecification[] allFieldTypes;
 
-    public LakeTable(Class<?> lakeProviderClass, TableSpecification specification) {
+    public LakeTable(LakeProviderFactory providerFactory, TableSpecification specification) {
         this.label = specification.label.toUpperCase();
-        this.columns = specification.columns;
+        this.columns = specification.columns.toArray(new ColumnSpecification[0]);
         this.format = specification.format;
-        this.providerFactory = LakeProviderFactory.create(lakeProviderClass, specification);
+        this.providerFactory = providerFactory;
+        this.allFieldTypes = specification.columns.stream().map(c -> c.datatype).toArray(TypeSpecification[]::new);
     }
 
     public String getLabel() {
@@ -47,7 +49,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     public RelDataType getRowType(RelDataTypeFactory typeFactory) {
         RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
         for (ColumnSpecification c : columns) {
-            RelDataType relDataType = TypeSpecification.of(c.datatype).toType(typeFactory);
+            RelDataType relDataType = c.datatype.toType(typeFactory);
             builder.add(c.label.toUpperCase(), relDataType);
             builder.nullable(c.nullable == null || c.nullable);
         }
@@ -56,12 +58,8 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
 
     @Override
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
+        projects = projects == null ? IntStream.range(0, columns.length).toArray() : projects;
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
-        final TypeSpecification[] allFieldTypes = columns.stream()
-                .map(c -> c.datatype)
-                .map(TypeSpecification::of)
-                .toArray(TypeSpecification[]::new);
-        projects = projects == null ? IntStream.range(0, columns.size()).toArray() : projects;
         LakeProvider provider = providerFactory.build(filters, projects, allFieldTypes);
         return new AbstractEnumerable<>() {
             public Enumerator<Object[]> enumerator() {
@@ -69,6 +67,5 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
             }
         };
     }
-
 
 }

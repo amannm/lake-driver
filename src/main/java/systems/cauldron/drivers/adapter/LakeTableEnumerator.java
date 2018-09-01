@@ -25,19 +25,11 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
     private Object[] current;
 
     public LakeTableEnumerator(FormatSpecification readerConfig, AtomicBoolean cancelFlag, LakeProvider provider) {
-        CsvFormat format = new CsvFormat();
-        format.setDelimiter(readerConfig.delimiter);
-        format.setLineSeparator(readerConfig.lineSeparator);
-        format.setQuote(readerConfig.quoteChar);
-        format.setQuoteEscape(readerConfig.escape);
-        CsvParserSettings parserSettings = new CsvParserSettings();
-        parserSettings.setFormat(format);
-        parserSettings.setHeaderExtractionEnabled(readerConfig.header);
-        this.parser = new CsvParser(parserSettings);
-        this.parser.beginParsing(provider.fetchSource());
         this.fieldTypes = provider.getFieldTypes();
         this.projects = provider.getProjects();
         this.cancelFlag = cancelFlag;
+        this.parser = new CsvParser(getParserSettings(readerConfig));
+        this.parser.beginParsing(provider.fetchSource());
     }
 
     public Object[] current() {
@@ -113,5 +105,16 @@ public class LakeTableEnumerator implements Enumerator<Object[]> {
         }
     }
 
+    private static CsvParserSettings getParserSettings(FormatSpecification readerConfig) {
+        CsvFormat format = new CsvFormat();
+        format.setDelimiter(readerConfig.delimiter);
+        format.setLineSeparator(readerConfig.lineSeparator);
+        format.setQuote(readerConfig.quoteChar);
+        format.setQuoteEscape(readerConfig.escape);
+        CsvParserSettings parserSettings = new CsvParserSettings();
+        parserSettings.setFormat(format);
+        parserSettings.setHeaderExtractionEnabled(readerConfig.header);
+        return parserSettings;
+    }
 
 }

@@ -24,13 +24,13 @@ public enum TypeSpecification {
     TIMESTAMP(java.time.Instant.class, "timestamp");
 
     private final Class clazz;
-    private final String simpleName;
+    private final String stringName;
 
-    private static final Map<String, TypeSpecification> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.simpleName, v -> v));
+    private static final Map<String, TypeSpecification> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.stringName, v -> v));
 
-    TypeSpecification(Class clazz, String simpleName) {
+    TypeSpecification(Class clazz, String stringName) {
         this.clazz = clazz;
-        this.simpleName = simpleName;
+        this.stringName = stringName;
     }
 
     public RelDataType toType(RelDataTypeFactory typeFactory) {
@@ -40,4 +40,9 @@ public enum TypeSpecification {
     public static TypeSpecification of(String typeString) {
         return MAP.get(typeString);
     }
+
+    public String toJson() {
+        return stringName;
+    }
+
 }

@@ -41,17 +41,8 @@ public class LakeS3SelectProvider extends LakeProvider {
 
     @Override
     public InputStream fetchSource() {
-
         AmazonS3URI amazonS3URI = new AmazonS3URI(source);
-
-        SelectObjectContentRequest request = new SelectObjectContentRequest();
-        request.setBucketName(amazonS3URI.getBucket());
-        request.setKey(amazonS3URI.getKey());
-        request.setExpression(query);
-        request.setExpressionType(ExpressionType.SQL);
-        request.setInputSerialization(getInputSerialization(format));
-        request.setOutputSerialization(getOutputSerialization(format));
-
+        SelectObjectContentRequest request = getRequest(amazonS3URI, query, format);
         AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
         SelectObjectContentResult result = s3.selectObjectContent(request);
         SelectObjectContentEventStream payload = result.getPayload();
@@ -90,6 +81,17 @@ public class LakeS3SelectProvider extends LakeProvider {
         }
         return inputSerialization;
 
+    }
+
+    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpecification format) {
+        SelectObjectContentRequest request = new SelectObjectContentRequest();
+        request.setBucketName(uri.getBucket());
+        request.setKey(uri.getKey());
+        request.setExpression(query);
+        request.setExpressionType(ExpressionType.SQL);
+        request.setInputSerialization(getInputSerialization(format));
+        request.setOutputSerialization(getOutputSerialization(format));
+        return request;
     }
 
     private static OutputSerialization getOutputSerialization(FormatSpecification spec) {
