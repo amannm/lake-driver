@@ -2,6 +2,7 @@ package systems.cauldron.drivers.scan;
 
 import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.converter.RowConverter;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -20,13 +21,7 @@ public abstract class LakeScan {
         this.format = format;
     }
 
-    public TypeSpec[] getTypes() {
-        return types;
-    }
-
-    public int[] getProjects() {
-        return projects;
-    }
+    public abstract RowConverter getRowConverter();
 
     public abstract InputStream getSource();
 

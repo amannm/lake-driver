@@ -1,7 +1,16 @@
 package systems.cauldron.drivers.scan;
 
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.CSVInput;
+import com.amazonaws.services.s3.model.CSVOutput;
+import com.amazonaws.services.s3.model.CompressionType;
+import com.amazonaws.services.s3.model.ExpressionType;
+import com.amazonaws.services.s3.model.FileHeaderInfo;
+import com.amazonaws.services.s3.model.InputSerialization;
+import com.amazonaws.services.s3.model.OutputSerialization;
+import com.amazonaws.services.s3.model.SelectObjectContentEventStream;
+import com.amazonaws.services.s3.model.SelectObjectContentRequest;
+import com.amazonaws.services.s3.model.SelectObjectContentResult;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -13,10 +22,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.converter.RowConverter;
+import systems.cauldron.drivers.converter.SimpleRowConverter;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -36,13 +51,11 @@ public class LakeS3SelectScan extends LakeS3Scan {
     }
 
     @Override
-    public TypeSpec[] getTypes() {
-        return IntStream.of(projects).boxed().map(i -> types[i]).toArray(TypeSpec[]::new);
-    }
-
-    @Override
-    public int[] getProjects() {
-        return IntStream.range(0, projects.length).toArray();
+    public RowConverter getRowConverter() {
+        TypeSpec[] typeSpecs = IntStream.of(projects).boxed()
+                .map(i -> types[i])
+                .toArray(TypeSpec[]::new);
+        return new SimpleRowConverter(typeSpecs);
     }
 
     @Override
