@@ -13,40 +13,40 @@ public abstract class RowConverter {
 
     public abstract Object[] convertRow(String[] values);
 
-    static Object convertField(TypeSpec fieldType, String string) throws NumberFormatException, DateTimeParseException {
-        switch (fieldType) {
+    static Object convertField(TypeSpec type, String value) throws NumberFormatException, DateTimeParseException {
+        switch (type) {
             case STRING:
-                return string;
+                return value;
             case CHARACTER:
-                if (string.length() == 1) {
-                    return string.charAt(0);
+                if (value.length() == 1) {
+                    return value.charAt(0);
                 } else {
-                    throw new IllegalArgumentException("invalid char string value: '" + string + "'");
+                    throw new IllegalArgumentException("invalid char string value: '" + value + "'");
                 }
             case BOOLEAN:
-                return Boolean.parseBoolean(string);
+                return Boolean.parseBoolean(value);
             case BYTE:
-                return Byte.parseByte(string);
+                return Byte.parseByte(value);
             case SHORT:
-                return Short.parseShort(string);
+                return Short.parseShort(value);
             case INTEGER:
-                return Integer.parseInt(string);
+                return Integer.parseInt(value);
             case LONG:
-                return Long.parseLong(string);
+                return Long.parseLong(value);
             case FLOAT:
-                return Float.parseFloat(string);
+                return Float.parseFloat(value);
             case DOUBLE:
-                return Double.parseDouble(string);
+                return Double.parseDouble(value);
             case DATE:
-                return DateTimeFormatter.ISO_LOCAL_DATE.parse(string, LocalDate::from);
+                return DateTimeFormatter.ISO_LOCAL_DATE.parse(value, LocalDate::from);
             case TIME:
-                return DateTimeFormatter.ISO_LOCAL_TIME.parse(string, LocalTime::from);
+                return DateTimeFormatter.ISO_LOCAL_TIME.parse(value, LocalTime::from);
             case DATETIME:
-                return DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(string, LocalDateTime::from);
+                return DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(value, LocalDateTime::from);
             case TIMESTAMP:
-                return DateTimeFormatter.ISO_INSTANT.parse(string, Instant::from);
+                return DateTimeFormatter.ISO_INSTANT.parse(value, Instant::from);
             default:
-                throw new IllegalArgumentException("invalid field type: " + fieldType.toString());
+                throw new IllegalArgumentException("invalid field type: " + type);
         }
     }
 }
