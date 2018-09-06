@@ -24,17 +24,6 @@ public class LakeSchemaFactory implements SchemaFactory {
 
     @Override
     public Schema create(SchemaPlus parentSchema, String name, Map<String, Object> operand) {
-
-        Class<?> scanClass = extractScanOperand(operand);
-        JsonArray inputTables = extractInputsOperand(operand);
-
-        Map<String, Table> tableMap = inputTables.stream()
-                .map(v -> (JsonObject) v)
-                .map(TableSpec::new)
-                .collect(Collectors.toMap(
-                        spec -> spec.label.toUpperCase(),
-                        spec -> new LakeTable(scanClass, spec)));
-
         return new AbstractSchema() {
 
             @Override
@@ -44,11 +33,20 @@ public class LakeSchemaFactory implements SchemaFactory {
 
             @Override
             protected Map<String, Table> getTableMap() {
-                return tableMap;
+
+                Class<?> scanClass = extractScanOperand(operand);
+                JsonArray inputTables = extractInputsOperand(operand);
+
+                return inputTables.stream()
+                        .map(v -> (JsonObject) v)
+                        .map(TableSpec::new)
+                        .collect(Collectors.toMap(
+                                spec -> spec.label.toUpperCase(),
+                                spec -> new LakeTable(scanClass, spec)));
+
             }
 
         };
-
     }
 
     private Class<?> extractScanOperand(Map<String, Object> operand) {
