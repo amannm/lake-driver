@@ -9,16 +9,16 @@ import java.net.URI;
 
 public abstract class LakeScan {
 
-    final TypeSpec[] types;
-    final int[] projects;
     final URI source;
     final FormatSpec format;
+    final TypeSpec[] types;
+    final int[] projects;
 
-    LakeScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
-        this.types = types;
-        this.projects = projects;
+    LakeScan(URI source, FormatSpec format, TypeSpec[] types, int[] projects) {
         this.source = source;
         this.format = format;
+        this.types = types;
+        this.projects = projects;
     }
 
     public abstract RowConverter getRowConverter();

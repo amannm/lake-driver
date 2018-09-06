@@ -13,7 +13,7 @@ abstract class LakeS3Scan extends LakeScan {
     final AmazonS3URI s3Source = new AmazonS3URI(source);
     final AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
 
-    LakeS3Scan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
-        super(types, projects, source, format);
+    LakeS3Scan(URI source, FormatSpec format, TypeSpec[] types, int[] projects) {
+        super(source, format, types, projects);
     }
 }

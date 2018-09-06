@@ -11,8 +11,8 @@ import java.net.URI;
 
 public class LakeS3GetScan extends LakeS3Scan {
 
-    LakeS3GetScan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
-        super(types, projects, source, format);
+    LakeS3GetScan(URI source, FormatSpec format, TypeSpec[] types, int[] projects) {
+        super(source, format, types, projects);
     }
 
     @Override

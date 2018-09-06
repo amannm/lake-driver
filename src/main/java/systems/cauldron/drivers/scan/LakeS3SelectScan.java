@@ -44,8 +44,8 @@ public class LakeS3SelectScan extends LakeS3Scan {
 
     private final String query;
 
-    LakeS3SelectScan(TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters, URI source, FormatSpec format) {
-        super(fieldTypes, projects, source, format);
+    LakeS3SelectScan(URI source, FormatSpec format, TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters) {
+        super(source, format, fieldTypes, projects);
         this.query = compileQuery(filters, projects);
         LOG.info("{}", query);
     }

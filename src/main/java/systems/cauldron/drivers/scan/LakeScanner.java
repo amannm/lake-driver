@@ -13,19 +13,15 @@ public interface LakeScanner extends BiFunction<int[], List<RexNode>, LakeScan> 
         TypeSpec[] fields = spec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
         if (LakeS3SelectScan.class.equals(providerClass)) {
             return (projects, filters) -> new LakeS3SelectScan(
-                    fields,
+                    spec.location, spec.format, fields,
                     projects,
-                    filters,
-                    spec.location,
-                    spec.format
+                    filters
             );
         }
         if (LakeS3GetScan.class.equals(providerClass)) {
             return (projects, filters) -> new LakeS3GetScan(
-                    fields,
-                    projects,
-                    spec.location,
-                    spec.format
+                    spec.location, spec.format, fields,
+                    projects
             );
         }
         throw new IllegalArgumentException("encountered unknown provider class: " + providerClass.getName());
