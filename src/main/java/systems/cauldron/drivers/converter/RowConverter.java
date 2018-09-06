@@ -13,7 +13,7 @@ public abstract class RowConverter {
 
     public abstract Object[] convertRow(String[] values);
 
-    final Object convertField(TypeSpec fieldType, String string) throws NumberFormatException, DateTimeParseException {
+    static Object convertField(TypeSpec fieldType, String string) throws NumberFormatException, DateTimeParseException {
         switch (fieldType) {
             case STRING:
                 return string;
