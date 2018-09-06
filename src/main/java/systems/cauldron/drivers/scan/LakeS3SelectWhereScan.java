@@ -28,7 +28,7 @@ public class LakeS3SelectWhereScan extends LakeS3SelectScan {
 
     @Override
     public String compileQuery(int[] projects, List<RexNode> filters) {
-        return compileQuery(projects) + compileWhereClause(filters);
+        return compileSelectFromClause(projects) + compileWhereClause(filters);
     }
 
     private static String compileWhereClause(List<RexNode> filters) {

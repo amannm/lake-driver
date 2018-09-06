@@ -33,7 +33,7 @@ public class LakeS3SelectScan extends LakeS3Scan {
 
     LakeS3SelectScan(URI source, FormatSpec format, TypeSpec[] fieldTypes, int[] projects) {
         super(source, format, fieldTypes, projects);
-        this.query = compileQuery(projects);
+        this.query = compileSelectFromClause(projects);
         LOG.info("{}", query);
     }
 
@@ -59,15 +59,15 @@ public class LakeS3SelectScan extends LakeS3Scan {
         return payload.getRecordsInputStream();
     }
 
-    static String compileQuery(int[] projects) {
+    protected String compileQuery(int[] projects, List<RexNode> filters) {
+        return compileSelectFromClause(projects);
+    }
+
+    static String compileSelectFromClause(int[] projects) {
         String selectList = IntStream.of(projects).boxed()
                 .map(i -> i + 1).map(i -> "_" + i)
                 .collect(Collectors.joining(", "));
         return String.format("SELECT %s FROM S3Object", selectList);
-    }
-
-    protected String compileQuery(int[] projects, List<RexNode> filters) {
-        return compileQuery(projects);
     }
 
     private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
