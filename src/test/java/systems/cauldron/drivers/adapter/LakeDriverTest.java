@@ -13,6 +13,7 @@ import systems.cauldron.drivers.LakeDriver;
 import systems.cauldron.drivers.config.TableSpec;
 import systems.cauldron.drivers.scan.LakeS3GetScan;
 import systems.cauldron.drivers.scan.LakeS3SelectScan;
+import systems.cauldron.drivers.scan.LakeS3SelectWhereScan;
 import systems.cauldron.drivers.scan.LakeScan;
 
 import javax.json.Json;
@@ -25,7 +26,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,6 +60,24 @@ public class LakeDriverTest {
 
     private static final String TEST_QUERY_C = "select people.id, relationships.object_person_id from people inner join relationships on people.id = relationships.subject_person_id and relationships.predicate_id = 'has_friend' and people.firstname like '%mann'";
     private static final String TEST_RESULT_C = "1337,420";
+
+    @Test
+    public void oneTableSimpleFilterS3SelectWhere() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
+        assertEquals(TEST_RESULT_A, resultString);
+    }
+
+    @Test
+    public void oneTableComplexFilterS3SelectWhere() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+        assertEquals(TEST_RESULT_B, resultString);
+    }
+
+    @Test
+    public void twoTableSimpleJoinS3SelectWhere() throws IOException {
+        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+        assertEquals(TEST_RESULT_C, resultString);
+    }
 
     @Test
     public void oneTableSimpleFilterS3Select() throws IOException {

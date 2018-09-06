@@ -11,11 +11,17 @@ public interface LakeScanner extends BiFunction<int[], List<RexNode>, LakeScan> 
 
     static LakeScanner create(Class<?> providerClass, TableSpec spec) {
         TypeSpec[] fields = spec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
-        if (LakeS3SelectScan.class.equals(providerClass)) {
-            return (projects, filters) -> new LakeS3SelectScan(
+        if (LakeS3SelectWhereScan.class.equals(providerClass)) {
+            return (projects, filters) -> new LakeS3SelectWhereScan(
                     spec.location, spec.format, fields,
                     projects,
                     filters
+            );
+        }
+        if (LakeS3SelectScan.class.equals(providerClass)) {
+            return (projects, filters) -> new LakeS3SelectScan(
+                    spec.location, spec.format, fields,
+                    projects
             );
         }
         if (LakeS3GetScan.class.equals(providerClass)) {
