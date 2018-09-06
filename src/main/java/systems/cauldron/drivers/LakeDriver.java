@@ -2,7 +2,7 @@ package systems.cauldron.drivers;
 
 import systems.cauldron.drivers.adapter.LakeSchemaFactory;
 import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.scan.LakeS3GetScan;
+import systems.cauldron.drivers.scan.LakeS3SelectScan;
 import systems.cauldron.drivers.scan.LakeScan;
 
 import javax.json.Json;
@@ -25,7 +25,7 @@ public class LakeDriver {
     }
 
     public static Connection getConnection(List<TableSpec> tables) throws SQLException {
-        return getConnection(tables, LakeS3GetScan.class);
+        return getConnection(tables, LakeS3SelectScan.class);
     }
 
     public static Connection getConnection(List<TableSpec> tables, Class<? extends LakeScan> scanClass) throws SQLException {
