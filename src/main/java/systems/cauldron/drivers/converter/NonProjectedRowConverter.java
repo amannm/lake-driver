@@ -2,13 +2,13 @@ package systems.cauldron.drivers.converter;
 
 import systems.cauldron.drivers.config.TypeSpec;
 
-public class ProjectingRowConverter extends RowConverter {
+public class NonProjectedRowConverter extends RowConverter {
 
-    private final TypeSpec[] allFieldTypes;
+    private final TypeSpec[] fieldTypes;
     private final int[] projects;
 
-    public ProjectingRowConverter(TypeSpec[] allFieldTypes, int[] projects) {
-        this.allFieldTypes = allFieldTypes;
+    public NonProjectedRowConverter(TypeSpec[] fieldTypes, int[] projects) {
+        this.fieldTypes = fieldTypes;
         this.projects = projects;
     }
 
@@ -18,7 +18,7 @@ public class ProjectingRowConverter extends RowConverter {
             int columnIndex = projects[i];
             String value = values[columnIndex];
             if (value != null) {
-                TypeSpec type = allFieldTypes[columnIndex];
+                TypeSpec type = fieldTypes[columnIndex];
                 result[i] = convertField(type, value);
             }
         }

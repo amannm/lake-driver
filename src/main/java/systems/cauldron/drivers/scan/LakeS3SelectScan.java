@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.converter.ProjectedRowConverter;
 import systems.cauldron.drivers.converter.RowConverter;
-import systems.cauldron.drivers.converter.SimpleRowConverter;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -52,10 +52,10 @@ public class LakeS3SelectScan extends LakeS3Scan {
 
     @Override
     public RowConverter getRowConverter() {
-        TypeSpec[] typeSpecs = IntStream.of(projects).boxed()
+        TypeSpec[] projectedTypes = IntStream.of(projects).boxed()
                 .map(i -> types[i])
                 .toArray(TypeSpec[]::new);
-        return new SimpleRowConverter(typeSpecs);
+        return new ProjectedRowConverter(projectedTypes);
     }
 
     @Override
