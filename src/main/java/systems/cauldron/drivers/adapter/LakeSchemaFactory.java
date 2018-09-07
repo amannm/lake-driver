@@ -17,13 +17,16 @@ import java.util.stream.Collectors;
 
 public class LakeSchemaFactory implements SchemaFactory {
 
+    //Calcite SchemaFactory requirement
     public static final LakeSchemaFactory INSTANCE = new LakeSchemaFactory();
 
+    //Calcite SchemaFactory requirement
     public LakeSchemaFactory() {
     }
 
     @Override
     public Schema create(SchemaPlus parentSchema, String name, Map<String, Object> operand) {
+
         return new AbstractSchema() {
 
             @Override
@@ -47,6 +50,7 @@ public class LakeSchemaFactory implements SchemaFactory {
             }
 
         };
+
     }
 
     private Class<?> extractScanOperand(Map<String, Object> operand) {
