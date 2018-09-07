@@ -30,6 +30,9 @@ dependencies {
     //csv parsing
     compile group: 'com.univocity', name: 'univocity-parsers', version: '2+'
 
+    //tabular compression
+    compile group: 'org.apache.parquet', name: 'parquet-avro', version: '1.10.0'
+
     //unit testing
     testCompile group: 'junit', name: 'junit', version: '4+'
 }

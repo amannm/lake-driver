@@ -1,5 +1,8 @@
 package systems.cauldron.drivers.adapter;
 
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.DataContext;
 import org.apache.calcite.linq4j.AbstractEnumerable;
 import org.apache.calcite.linq4j.Enumerable;
@@ -10,7 +13,9 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.ProjectableFilterableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
 import systems.cauldron.drivers.config.ColumnSpec;
+import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.converter.RowConverter;
 import systems.cauldron.drivers.scan.LakeScan;
 import systems.cauldron.drivers.scan.LakeScanner;
 
@@ -44,14 +49,72 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
 
     @Override
     public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters, int[] projects) {
+        //TODO: understand how Calcite works here and optimize
+
         final AtomicBoolean cancelFlag = DataContext.Variable.CANCEL_FLAG.get(root);
         projects = (projects == null) ? defaultProjects : projects;
         final LakeScan scan = scanner.apply(projects, filters);
+
         return new AbstractEnumerable<>() {
+
             public Enumerator<Object[]> enumerator() {
-                return new LakeTableEnumerator(scan, cancelFlag);
+
+                RowConverter converter = scan.getRowConverter();
+                CsvParser parser = createParser(scan.getFormat());
+                parser.beginParsing(scan.getSource());
+
+                return new Enumerator<Object[]>() {
+
+                    private Object[] current;
+
+                    public Object[] current() {
+                        return current;
+                    }
+
+                    public boolean moveNext() {
+                        if (cancelFlag.get()) {
+                            return false;
+                        }
+                        final String[] strings = parser.parseNext();
+                        if (strings == null) {
+                            current = null;
+                            parser.stopParsing();
+                            return false;
+                        }
+                        current = converter.convertRow(strings);
+                        return true;
+                    }
+
+                    public void reset() {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    public void close() {
+                        if (!parser.getContext().isStopped()) {
+                            parser.stopParsing();
+                        }
+                    }
+
+                };
             }
+
         };
+    }
+
+    private static CsvParser createParser(FormatSpec spec) {
+
+        CsvFormat format = new CsvFormat();
+        format.setDelimiter(spec.delimiter);
+        format.setLineSeparator(spec.lineSeparator);
+        format.setQuote(spec.quoteChar);
+        format.setQuoteEscape(spec.escape);
+
+        CsvParserSettings parserSettings = new CsvParserSettings();
+        parserSettings.setFormat(format);
+        parserSettings.setHeaderExtractionEnabled(spec.header);
+
+        return new CsvParser(parserSettings);
+
     }
 
 }
