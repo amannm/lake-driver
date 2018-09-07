@@ -63,7 +63,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                 CsvParser parser = createParser(scan.getFormat());
                 parser.beginParsing(scan.getSource());
 
-                return new Enumerator<Object[]>() {
+                return new Enumerator<>() {
 
                     private Object[] current;
 
