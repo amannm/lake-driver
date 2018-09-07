@@ -1,16 +1,7 @@
 package systems.cauldron.drivers.scan;
 
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.CSVInput;
-import com.amazonaws.services.s3.model.CSVOutput;
-import com.amazonaws.services.s3.model.CompressionType;
-import com.amazonaws.services.s3.model.ExpressionType;
-import com.amazonaws.services.s3.model.FileHeaderInfo;
-import com.amazonaws.services.s3.model.InputSerialization;
-import com.amazonaws.services.s3.model.OutputSerialization;
-import com.amazonaws.services.s3.model.SelectObjectContentEventStream;
-import com.amazonaws.services.s3.model.SelectObjectContentRequest;
-import com.amazonaws.services.s3.model.SelectObjectContentResult;
+import com.amazonaws.services.s3.model.*;
 import org.apache.calcite.rex.RexNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,29 +25,35 @@ public class LakeS3SelectScan extends LakeS3Scan {
     LakeS3SelectScan(URI source, FormatSpec format, TypeSpec[] fieldTypes, int[] projects) {
         super(source, format, fieldTypes, projects);
         this.query = compileSelectFromClause(projects);
-        LOG.info("{}", query);
+        LOG.debug("{}", query);
     }
 
     LakeS3SelectScan(URI source, FormatSpec format, TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters) {
         super(source, format, fieldTypes, projects);
         this.query = compileQuery(projects, filters);
-        LOG.info("{}", query);
+        LOG.debug("{}", query);
     }
 
     @Override
     public RowConverter getRowConverter() {
+
         TypeSpec[] projectedTypes = IntStream.of(projects).boxed()
                 .map(i -> types[i])
                 .toArray(TypeSpec[]::new);
+
         return new ProjectedRowConverter(projectedTypes);
+
     }
 
     @Override
     public InputStream getSource() {
+
         SelectObjectContentRequest request = getRequest(s3Source, query, format);
         SelectObjectContentResult result = s3Client.selectObjectContent(request);
         SelectObjectContentEventStream payload = result.getPayload();
+
         return payload.getRecordsInputStream();
+
     }
 
     protected String compileQuery(int[] projects, List<RexNode> filters) {
@@ -64,13 +61,17 @@ public class LakeS3SelectScan extends LakeS3Scan {
     }
 
     static String compileSelectFromClause(int[] projects) {
+
         String selectList = IntStream.of(projects).boxed()
                 .map(i -> i + 1).map(i -> "_" + i)
                 .collect(Collectors.joining(", "));
+
         return String.format("SELECT %s FROM S3Object", selectList);
+
     }
 
     private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
+
         SelectObjectContentRequest request = new SelectObjectContentRequest();
         request.setBucketName(uri.getBucket());
         request.setKey(uri.getKey());
@@ -78,7 +79,9 @@ public class LakeS3SelectScan extends LakeS3Scan {
         request.setExpressionType(ExpressionType.SQL);
         request.setInputSerialization(getInputSerialization(format));
         request.setOutputSerialization(getOutputSerialization(format));
+
         return request;
+
     }
 
     private static InputSerialization getInputSerialization(FormatSpec spec) {
@@ -101,6 +104,7 @@ public class LakeS3SelectScan extends LakeS3Scan {
             default:
                 inputSerialization.setCompressionType(CompressionType.NONE);
         }
+
         return inputSerialization;
 
     }
@@ -115,6 +119,7 @@ public class LakeS3SelectScan extends LakeS3Scan {
 
         OutputSerialization outputSerialization = new OutputSerialization();
         outputSerialization.setCsv(csvOutput);
+
         return outputSerialization;
 
     }
