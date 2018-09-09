@@ -11,6 +11,7 @@ import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;
 import org.apache.parquet.io.SeekableInputStream;
+import systems.cauldron.drivers.config.TableSpec;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -21,48 +22,46 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.function.Consumer;
 
 
 public class ParquetUtil {
 
-    public static void readFromParquet(Path filePathToRead) throws IOException {
-
+    public static void read(Path source, Consumer<List<String>> recordHandler) throws IOException {
 
         InputFile inputFile = new InputFile() {
 
             @Override
             public long getLength() throws IOException {
-                return Files.size(filePathToRead);
+                return Files.size(source);
             }
 
             @Override
             public SeekableInputStream newStream() throws IOException {
-                FileChannel channel = FileChannel.open(filePathToRead,
+                FileChannel channel = FileChannel.open(source,
                         StandardOpenOption.READ);
                 return new ByteChannelSeekableInputStream(channel);
             }
         };
 
-        try (ParquetReader<GenericData.Record> reader = AvroParquetReader
-                .<GenericData.Record>builder(inputFile)
+        try (ParquetReader<List<String>> reader = AvroParquetReader.<List<String>>builder(inputFile)
                 .build()) {
-
-            GenericData.Record record;
+            List<String> record;
             while ((record = reader.read()) != null) {
-                System.out.println(record);
+                recordHandler.accept(record);
             }
         }
     }
 
-    public static void writeToParquet(String avscJsonString, List<GenericData.Record> recordsToWrite, Path fileToWrite) throws IOException {
+    public static void convert(TableSpec tableSpec, Path source, Path destination) throws IOException {
 
-        Schema schema = new Schema.Parser().parse(avscJsonString);
+        Schema schema = tableSpec.toAvroSchema();
 
         OutputFile outputFile = new OutputFile() {
 
             @Override
             public PositionOutputStream create(long blockSizeHint) throws IOException {
-                FileChannel channel = FileChannel.open(fileToWrite,
+                FileChannel channel = FileChannel.open(destination,
                         StandardOpenOption.WRITE,
                         StandardOpenOption.CREATE_NEW);
                 return new ByteChannelPositionOutputStream(channel);
@@ -70,7 +69,7 @@ public class ParquetUtil {
 
             @Override
             public PositionOutputStream createOrOverwrite(long blockSizeHint) throws IOException {
-                FileChannel channel = FileChannel.open(fileToWrite,
+                FileChannel channel = FileChannel.open(destination,
                         StandardOpenOption.WRITE,
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING);
@@ -89,13 +88,11 @@ public class ParquetUtil {
 
         };
 
-        try (ParquetWriter<GenericData.Record> writer = AvroParquetWriter
-                .<GenericData.Record>builder(outputFile)
+        try (ParquetWriter<GenericData.Record> writer = AvroParquetWriter.<GenericData.Record>builder(outputFile)
                 .withSchema(schema)
                 .withCompressionCodec(CompressionCodecName.SNAPPY)
                 .build()) {
-
-            for (GenericData.Record record : recordsToWrite) {
+            for (GenericData.Record record : records) {
                 writer.write(record);
             }
         }
