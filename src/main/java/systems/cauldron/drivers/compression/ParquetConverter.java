@@ -13,12 +13,16 @@ import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
 import systems.cauldron.drivers.config.ColumnSpec;
 import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.converter.ProjectedRowConverter;
+import systems.cauldron.drivers.parser.CsvInputStreamParser;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 
 public class ParquetConverter {
@@ -34,13 +38,12 @@ public class ParquetConverter {
         }
     }
 
-    public static void convert(TableSpec tableSpec, List<Object[]> lines, Path parquetDestination) throws IOException {
+    public static void convert(TableSpec tableSpec, Path sourceCsv, Path parquetDestination) throws IOException {
 
-        Schema schema = getAvroSchema(tableSpec);
+        Schema schema = buildAvroSchema(tableSpec);
 
-        List<GenericRecord> records = lines.stream()
-                .map(line -> buildAvroRecord(schema, line))
-                .collect(Collectors.toList());
+        TypeSpec[] typeSpecs = tableSpec.columns.stream().map(c -> c.datatype).toArray(TypeSpec[]::new);
+        ProjectedRowConverter converter = new ProjectedRowConverter(typeSpecs);
 
         OutputFile outputFile = new ParquetOutputFile(parquetDestination);
 
@@ -48,8 +51,17 @@ public class ParquetConverter {
                 .withSchema(schema)
                 .withCompressionCodec(CompressionCodecName.SNAPPY)
                 .build()) {
-            for (GenericRecord record : records) {
-                writer.write(record);
+
+            try (CsvInputStreamParser parser = new CsvInputStreamParser(tableSpec.format, converter, Files.newInputStream(sourceCsv, StandardOpenOption.READ))) {
+                while (true) {
+                    Optional<Object[]> record = parser.parseRecord();
+                    if (record.isPresent()) {
+                        GenericRecord avroRecord = buildAvroRecord(schema, record.get());
+                        writer.write(avroRecord);
+                    } else {
+                        break;
+                    }
+                }
             }
         }
 
@@ -63,8 +75,7 @@ public class ParquetConverter {
         return record;
     }
 
-
-    private static Schema getAvroSchema(TableSpec tableSpec) {
+    private static Schema buildAvroSchema(TableSpec tableSpec) {
         SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(tableSpec.label).fields();
         for (ColumnSpec columnSpec : tableSpec.columns) {
             fields = addAvroField(columnSpec, fields);
