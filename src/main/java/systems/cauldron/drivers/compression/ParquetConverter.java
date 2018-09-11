@@ -16,12 +16,12 @@ import systems.cauldron.drivers.config.TableSpec;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
-public class ParquetUtil {
+public class ParquetConverter {
 
     public static void read(Path source, Consumer<GenericRecord> recordHandler) throws IOException {
         InputFile inputFile = new ParquetInputFile(source);
@@ -34,10 +34,16 @@ public class ParquetUtil {
         }
     }
 
-    public static void convert(TableSpec tableSpec, Path source, Path destination) throws IOException {
-        Schema schema = toAvroSchema(tableSpec);
-        List<GenericRecord> records = Collections.emptyList();
-        OutputFile outputFile = new ParquetOutputFile(destination);
+    public static void convert(TableSpec tableSpec, List<Object[]> lines, Path parquetDestination) throws IOException {
+
+        Schema schema = getAvroSchema(tableSpec);
+
+        List<GenericRecord> records = lines.stream()
+                .map(line -> buildAvroRecord(schema, line))
+                .collect(Collectors.toList());
+
+        OutputFile outputFile = new ParquetOutputFile(parquetDestination);
+
         try (ParquetWriter<GenericRecord> writer = AvroParquetWriter.<GenericRecord>builder(outputFile)
                 .withSchema(schema)
                 .withCompressionCodec(CompressionCodecName.SNAPPY)
@@ -46,9 +52,10 @@ public class ParquetUtil {
                 writer.write(record);
             }
         }
+
     }
 
-    public static GenericRecord record(Schema avroSchema, Object[] values) {
+    private static GenericRecord buildAvroRecord(Schema avroSchema, Object[] values) {
         GenericRecord record = new GenericData.Record(avroSchema);
         for (int i = 0; i < values.length; i++) {
             record.put(i, values[i]);
@@ -57,25 +64,20 @@ public class ParquetUtil {
     }
 
 
-    private static Schema toAvroSchema(TableSpec tableSpec) {
+    private static Schema getAvroSchema(TableSpec tableSpec) {
         SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(tableSpec.label).fields();
         for (ColumnSpec columnSpec : tableSpec.columns) {
-            fields = handleBuilder(columnSpec, fields);
+            fields = addAvroField(columnSpec, fields);
         }
         return fields.endRecord();
     }
 
 
-    private static SchemaBuilder.FieldAssembler<Schema> handleBuilder(ColumnSpec columnSpec, SchemaBuilder.FieldAssembler<Schema> fieldAssembler) {
+    private static SchemaBuilder.FieldAssembler<Schema> addAvroField(ColumnSpec columnSpec, SchemaBuilder.FieldAssembler<Schema> fieldAssembler) {
 
         SchemaBuilder.FieldTypeBuilder<Schema> type = fieldAssembler.name(columnSpec.label).type();
 
-        SchemaBuilder.BaseFieldTypeBuilder<Schema> baseType;
-        if (columnSpec.nullable) {
-            baseType = type.nullable();
-        } else {
-            baseType = type;
-        }
+        SchemaBuilder.BaseFieldTypeBuilder<Schema> baseType = columnSpec.nullable ? type.nullable() : type;
 
         switch (columnSpec.datatype) {
             case STRING:
@@ -97,9 +99,9 @@ public class ParquetUtil {
             case TIME:
             case DATETIME:
             case TIMESTAMP:
+            default:
                 throw new UnsupportedOperationException();
         }
-        return fieldAssembler;
 
     }
 

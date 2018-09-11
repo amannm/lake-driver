@@ -14,7 +14,7 @@ public class ParquetOutputFile implements OutputFile {
 
     private final Path destination;
 
-    public ParquetOutputFile(Path destination) {
+    ParquetOutputFile(Path destination) {
         this.destination = destination;
     }
 

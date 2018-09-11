@@ -16,7 +16,7 @@ public class ParquetInputFile implements InputFile {
 
     private final Path source;
 
-    public ParquetInputFile(Path source) {
+    ParquetInputFile(Path source) {
         this.source = source;
     }
 
