@@ -1,8 +1,5 @@
 package systems.cauldron.drivers.config;
 
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
-
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -45,11 +42,4 @@ public class TableSpec {
                 .build();
     }
 
-    public Schema toAvroSchema() {
-        SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(label).fields();
-        for (ColumnSpec columnSpec : columns) {
-            fields = columnSpec.handleBuilder(fields);
-        }
-        return fields.endRecord();
-    }
 }

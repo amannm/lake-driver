@@ -45,4 +45,8 @@ public enum TypeSpec {
         return stringName;
     }
 
+    public Class toJavaClass() {
+        return clazz;
+    }
+
 }

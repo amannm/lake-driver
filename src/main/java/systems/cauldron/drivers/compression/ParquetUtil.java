@@ -1,7 +1,9 @@
 package systems.cauldron.drivers.compression;
 
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.parquet.avro.AvroParquetReader;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetReader;
@@ -9,44 +11,23 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
-import org.apache.parquet.io.PositionOutputStream;
-import org.apache.parquet.io.SeekableInputStream;
+import systems.cauldron.drivers.config.ColumnSpec;
 import systems.cauldron.drivers.config.TableSpec;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 
 public class ParquetUtil {
 
-    public static void read(Path source, Consumer<List<String>> recordHandler) throws IOException {
-
-        InputFile inputFile = new InputFile() {
-
-            @Override
-            public long getLength() throws IOException {
-                return Files.size(source);
-            }
-
-            @Override
-            public SeekableInputStream newStream() throws IOException {
-                FileChannel channel = FileChannel.open(source,
-                        StandardOpenOption.READ);
-                return new ByteChannelSeekableInputStream(channel);
-            }
-        };
-
-        try (ParquetReader<List<String>> reader = AvroParquetReader.<List<String>>builder(inputFile)
+    public static void read(Path source, Consumer<GenericRecord> recordHandler) throws IOException {
+        InputFile inputFile = new ParquetInputFile(source);
+        try (ParquetReader<GenericRecord> reader = AvroParquetReader.<GenericRecord>builder(inputFile)
                 .build()) {
-            List<String> record;
+            GenericRecord record;
             while ((record = reader.read()) != null) {
                 recordHandler.accept(record);
             }
@@ -54,146 +35,74 @@ public class ParquetUtil {
     }
 
     public static void convert(TableSpec tableSpec, Path source, Path destination) throws IOException {
-
-        Schema schema = tableSpec.toAvroSchema();
-
-        OutputFile outputFile = new OutputFile() {
-
-            @Override
-            public PositionOutputStream create(long blockSizeHint) throws IOException {
-                FileChannel channel = FileChannel.open(destination,
-                        StandardOpenOption.WRITE,
-                        StandardOpenOption.CREATE_NEW);
-                return new ByteChannelPositionOutputStream(channel);
-            }
-
-            @Override
-            public PositionOutputStream createOrOverwrite(long blockSizeHint) throws IOException {
-                FileChannel channel = FileChannel.open(destination,
-                        StandardOpenOption.WRITE,
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING);
-                return new ByteChannelPositionOutputStream(channel);
-            }
-
-            @Override
-            public boolean supportsBlockSize() {
-                return false;
-            }
-
-            @Override
-            public long defaultBlockSize() {
-                return 0;
-            }
-
-        };
-
-        try (ParquetWriter<GenericData.Record> writer = AvroParquetWriter.<GenericData.Record>builder(outputFile)
+        Schema schema = toAvroSchema(tableSpec);
+        List<GenericRecord> records = Collections.emptyList();
+        OutputFile outputFile = new ParquetOutputFile(destination);
+        try (ParquetWriter<GenericRecord> writer = AvroParquetWriter.<GenericRecord>builder(outputFile)
                 .withSchema(schema)
                 .withCompressionCodec(CompressionCodecName.SNAPPY)
                 .build()) {
-            for (GenericData.Record record : records) {
+            for (GenericRecord record : records) {
                 writer.write(record);
             }
         }
     }
 
+    public static GenericRecord record(Schema avroSchema, Object[] values) {
+        GenericRecord record = new GenericData.Record(avroSchema);
+        for (int i = 0; i < values.length; i++) {
+            record.put(i, values[i]);
+        }
+        return record;
+    }
 
-    private static class ByteChannelPositionOutputStream extends PositionOutputStream {
 
-        private final SeekableByteChannel channel;
+    private static Schema toAvroSchema(TableSpec tableSpec) {
+        SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(tableSpec.label).fields();
+        for (ColumnSpec columnSpec : tableSpec.columns) {
+            fields = handleBuilder(columnSpec, fields);
+        }
+        return fields.endRecord();
+    }
 
-        private ByteChannelPositionOutputStream(SeekableByteChannel channel) {
-            this.channel = channel;
+
+    private static SchemaBuilder.FieldAssembler<Schema> handleBuilder(ColumnSpec columnSpec, SchemaBuilder.FieldAssembler<Schema> fieldAssembler) {
+
+        SchemaBuilder.FieldTypeBuilder<Schema> type = fieldAssembler.name(columnSpec.label).type();
+
+        SchemaBuilder.BaseFieldTypeBuilder<Schema> baseType;
+        if (columnSpec.nullable) {
+            baseType = type.nullable();
+        } else {
+            baseType = type;
         }
 
-        @Override
-        public long getPos() throws IOException {
-            return channel.position();
+        switch (columnSpec.datatype) {
+            case STRING:
+            case CHARACTER:
+                return baseType.stringType().noDefault();
+            case BOOLEAN:
+                return baseType.booleanType().noDefault();
+            case BYTE:
+            case SHORT:
+            case INTEGER:
+                return baseType.intType().noDefault();
+            case LONG:
+                return baseType.longType().noDefault();
+            case FLOAT:
+                return baseType.floatType().noDefault();
+            case DOUBLE:
+                return baseType.doubleType().noDefault();
+            case DATE:
+            case TIME:
+            case DATETIME:
+            case TIMESTAMP:
+                throw new UnsupportedOperationException();
         }
-
-        @Override
-        public void write(int b) throws IOException {
-            byte[] bytes = new byte[1];
-            ByteBuffer wrap = ByteBuffer.wrap(bytes);
-            wrap.put((byte) b);
-            wrap.flip();
-            channel.write(wrap);
-        }
-
-        @Override
-        public void close() throws IOException {
-            channel.close();
-        }
+        return fieldAssembler;
 
     }
 
-    private static class ByteChannelSeekableInputStream extends SeekableInputStream {
 
-        private final SeekableByteChannel channel;
-
-        private ByteChannelSeekableInputStream(SeekableByteChannel channel) {
-            this.channel = channel;
-        }
-
-        @Override
-        public int read() throws IOException {
-            byte[] bytes = new byte[1];
-            ByteBuffer wrap = ByteBuffer.wrap(bytes);
-            channel.read(wrap);
-            wrap.flip();
-            return wrap.get();
-        }
-
-        @Override
-        public long getPos() throws IOException {
-            return channel.position();
-        }
-
-        @Override
-        public void seek(long newPos) throws IOException {
-            channel.position(newPos);
-        }
-
-        @Override
-        public void readFully(byte[] bytes) throws IOException {
-            checkBytesAvailable(channel, bytes.length);
-            ByteBuffer wrap = ByteBuffer.wrap(bytes);
-            channel.read(wrap);
-        }
-
-        @Override
-        public void readFully(byte[] bytes, int start, int len) throws IOException {
-            checkBytesAvailable(channel, len);
-            ByteBuffer wrap = ByteBuffer.wrap(bytes);
-            wrap.position(start);
-            wrap.limit(start + len);
-            channel.read(wrap);
-        }
-
-        @Override
-        public int read(ByteBuffer buf) throws IOException {
-            return channel.read(buf);
-        }
-
-        @Override
-        public void readFully(ByteBuffer buf) throws IOException {
-            checkBytesAvailable(channel, buf.remaining());
-            channel.read(buf);
-        }
-
-        @Override
-        public void close() throws IOException {
-            channel.close();
-        }
-
-        private static void checkBytesAvailable(SeekableByteChannel channel, long length) throws IOException {
-            long fileBytesRemaining = channel.size() - channel.position();
-            if (fileBytesRemaining < length) {
-                throw new EOFException();
-            }
-        }
-
-    }
 
 }

@@ -40,7 +40,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
     public RelDataType getRowType(RelDataTypeFactory typeFactory) {
         RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
         for (ColumnSpec c : columns) {
-            RelDataType relDataType = c.datatype.toType(typeFactory);
+            RelDataType relDataType = typeFactory.createJavaType(c.datatype.toJavaClass());
             builder.add(c.label.toUpperCase(), relDataType);
             builder.nullable(c.nullable == null || c.nullable);
         }

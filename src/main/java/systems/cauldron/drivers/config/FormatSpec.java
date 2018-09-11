@@ -31,7 +31,7 @@ public class FormatSpec {
         this.compression = compression;
     }
 
-    public FormatSpec(JsonObject object) {
+    FormatSpec(JsonObject object) {
         this.delimiter = object.getString("delimiter").charAt(0);
         this.lineSeparator = object.getString("lineSeparator");
         this.quoteChar = object.getString("quoteChar").charAt(0);
@@ -57,7 +57,7 @@ public class FormatSpec {
         NEITHER
     }
 
-    public JsonObject toJson() {
+    JsonObject toJson() {
         return Json.createObjectBuilder()
                 .add("delimiter", "" + delimiter)
                 .add("lineSeparator", lineSeparator)
