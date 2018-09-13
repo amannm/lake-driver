@@ -21,24 +21,27 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 
 public class ParquetConverter {
 
-    public static void read(Path source, Consumer<GenericRecord> recordHandler) throws IOException {
-        InputFile inputFile = new ParquetInputFile(source);
+    public static void convertParquetToCsv(Path parquetSource, Path csvDestination) throws IOException {
+        InputFile inputFile = new ParquetInputFile(parquetSource);
         try (ParquetReader<GenericRecord> reader = AvroParquetReader.<GenericRecord>builder(inputFile)
                 .build()) {
-            GenericRecord record;
-            while ((record = reader.read()) != null) {
-                recordHandler.accept(record);
+            GenericRecord record = reader.read();
+            Schema schema = record.getSchema();
+            List<Schema.Field> fields = schema.getFields();
+
+            while (record != null) {
+                record = reader.read();
             }
         }
     }
 
-    public static void convert(TableSpec tableSpec, Path sourceCsv, Path parquetDestination) throws IOException {
+    public static void convertCsvToParquet(TableSpec tableSpec, Path sourceCsv, Path parquetDestination) throws IOException {
 
         Schema schema = buildAvroSchema(tableSpec);
 
@@ -47,17 +50,17 @@ public class ParquetConverter {
 
         OutputFile outputFile = new ParquetOutputFile(parquetDestination);
 
-        try (ParquetWriter<GenericRecord> writer = AvroParquetWriter.<GenericRecord>builder(outputFile)
+        try (ParquetWriter<GenericRecord> parquetWriter = AvroParquetWriter.<GenericRecord>builder(outputFile)
                 .withSchema(schema)
                 .withCompressionCodec(CompressionCodecName.SNAPPY)
                 .build()) {
 
-            try (CsvInputStreamParser parser = new CsvInputStreamParser(tableSpec.format, converter, Files.newInputStream(sourceCsv, StandardOpenOption.READ))) {
+            try (CsvInputStreamParser csvParser = new CsvInputStreamParser(tableSpec.format, converter, Files.newInputStream(sourceCsv, StandardOpenOption.READ))) {
                 while (true) {
-                    Optional<Object[]> record = parser.parseRecord();
+                    Optional<Object[]> record = csvParser.parseRecord();
                     if (record.isPresent()) {
                         GenericRecord avroRecord = buildAvroRecord(schema, record.get());
-                        writer.write(avroRecord);
+                        parquetWriter.write(avroRecord);
                     } else {
                         break;
                     }
