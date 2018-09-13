@@ -41,4 +41,5 @@ public class TableSpec {
                 .add("columns", columnsJson)
                 .build();
     }
+
 }

@@ -15,17 +15,18 @@ public class ColumnSpec {
         this.nullable = nullable;
     }
 
-    public ColumnSpec(JsonObject object) {
+    ColumnSpec(JsonObject object) {
         this.label = object.getString("label");
         this.datatype = TypeSpec.of(object.getString("datatype"));
         this.nullable = object.getBoolean("nullable");
     }
 
-    public JsonObject toJson() {
+    JsonObject toJson() {
         return Json.createObjectBuilder()
                 .add("label", label)
                 .add("datatype", datatype.toJson())
                 .add("nullable", nullable)
                 .build();
     }
+
 }

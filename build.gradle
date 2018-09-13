@@ -32,6 +32,7 @@ dependencies {
 
     //tabular compression
     compile group: 'org.apache.parquet', name: 'parquet-avro', version: '1.10.0'
+    compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.4.0'
 
     //unit testing
     testCompile group: 'junit', name: 'junit', version: '4+'

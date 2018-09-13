@@ -11,11 +11,7 @@ import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.config.TypeSpec;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Stack;
+import java.util.*;
 
 import static org.apache.calcite.sql.SqlKind.INPUT_REF;
 import static org.apache.calcite.sql.SqlKind.LITERAL;
