@@ -10,7 +10,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-public class ParquetOutputFile implements OutputFile {
+class ParquetOutputFile implements OutputFile {
 
     private final Path destination;
 

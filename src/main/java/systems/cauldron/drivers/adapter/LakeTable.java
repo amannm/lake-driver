@@ -15,7 +15,6 @@ import systems.cauldron.drivers.parser.CsvInputStreamParser;
 import systems.cauldron.drivers.scan.LakeScan;
 import systems.cauldron.drivers.scan.LakeScanner;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,11 +87,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                     }
 
                     public void close() {
-                        try {
-                            parser.close();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        parser.close();
                     }
 
                 };

@@ -7,7 +7,6 @@ import systems.cauldron.drivers.config.FormatSpec;
 import systems.cauldron.drivers.converter.RowConverter;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -47,7 +46,7 @@ public class CsvInputStreamParser implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (!parser.getContext().isStopped()) {
             parser.stopParsing();
         }
