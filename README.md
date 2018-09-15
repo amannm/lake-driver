@@ -1,6 +1,6 @@
 # lake-driver
-* JDBC driver for executing full-featured ANSI compliant SQL select statements on top of AWS S3 flat-file assets
-* query optimization pushes column projection and filtering over to AWS ideally leading to less data transfer and buffering
+* provides JDBC connections capable of executing SQL SELECT statements (see https://calcite.apache.org/docs/reference.html) on AWS S3 flat-file assets
+* query optimization pushes column projection and filtering over to AWS (aka "predicate pushdown") leading to less data needing transfer out of S3 and reduced network/storage/memory footprint by the runtime computing+consuming the output record set
 * Most of the work is done by the Apache Calcite (and Apache Avatica) projects, via an interface called ProjectableFilterableTable that (work-in-progress) maps to the subset of SQL currently supported by "S3 Select" https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-glacier-select-sql-reference.html
 * In-depth paper about Apache Calcite: https://arxiv.org/pdf/1802.10233.pdf
 
