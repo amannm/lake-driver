@@ -20,3 +20,4 @@
 * performance profiling, optimization
 * smarter, more comprehensive testing
 * mixed scan mode: some table scans are better GET, others SELECT
+* integrate and test the parquet compression support and save cash
