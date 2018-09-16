@@ -11,16 +11,6 @@ module systems.cauldron.drivers.lake {
     //flat-file parsing
     requires univocity.parsers;
 
-    //compression
-    //requires parquet.common;
-    //requires parquet.hadoop;
-    //requires avro;
-    //requires parquet.avro;
-
-    //logging
-    //requires slf4j.api;
-    //requires slf4j.simple;
-
     //cloud storage
     requires aws.java.sdk.s3;
 

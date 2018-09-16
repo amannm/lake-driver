@@ -14,8 +14,8 @@ repositories {
 dependencies {
 
     //logging
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7+'
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7+'
+    //compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7+'
+    //compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7+'
 
     //json tools
     compile group: 'javax.json', name: 'javax.json-api', version: '1+'
@@ -29,10 +29,6 @@ dependencies {
 
     //csv parsing
     compile group: 'com.univocity', name: 'univocity-parsers', version: '2+'
-
-    //tabular compression
-    compile group: 'org.apache.parquet', name: 'parquet-avro', version: '1.10.0'
-    compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.4.0'
 
     //unit testing
     testCompile group: 'junit', name: 'junit', version: '4+'
