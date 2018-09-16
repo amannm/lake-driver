@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.scan;
+package systems.cauldron.drivers.lake.scan;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rex.RexCall;
@@ -7,8 +7,8 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
-import systems.cauldron.drivers.config.FormatSpec;
-import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.lake.config.FormatSpec;
+import systems.cauldron.drivers.lake.config.TypeSpec;
 
 import java.net.URI;
 import java.util.*;

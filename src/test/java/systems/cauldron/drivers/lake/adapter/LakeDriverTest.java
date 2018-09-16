@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.lake.adapter;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -9,12 +9,12 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import systems.cauldron.drivers.LakeDriver;
-import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.scan.LakeS3GetScan;
-import systems.cauldron.drivers.scan.LakeS3SelectScan;
-import systems.cauldron.drivers.scan.LakeS3SelectWhereScan;
-import systems.cauldron.drivers.scan.LakeScan;
+import systems.cauldron.drivers.lake.LakeDriver;
+import systems.cauldron.drivers.lake.config.TableSpec;
+import systems.cauldron.drivers.lake.scan.LakeS3GetScan;
+import systems.cauldron.drivers.lake.scan.LakeS3SelectScan;
+import systems.cauldron.drivers.lake.scan.LakeS3SelectWhereScan;
+import systems.cauldron.drivers.lake.scan.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -26,11 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

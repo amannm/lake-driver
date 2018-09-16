@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.config;
+package systems.cauldron.drivers.lake.config;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;

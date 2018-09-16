@@ -1,10 +1,10 @@
-package systems.cauldron.drivers.scan;
+package systems.cauldron.drivers.lake.scan;
 
 import com.amazonaws.services.s3.model.S3Object;
-import systems.cauldron.drivers.config.FormatSpec;
-import systems.cauldron.drivers.config.TypeSpec;
-import systems.cauldron.drivers.converter.NonProjectedRowConverter;
-import systems.cauldron.drivers.converter.RowConverter;
+import systems.cauldron.drivers.lake.config.FormatSpec;
+import systems.cauldron.drivers.lake.config.TypeSpec;
+import systems.cauldron.drivers.lake.converter.NonProjectedRowConverter;
+import systems.cauldron.drivers.lake.converter.RowConverter;
 
 import java.io.InputStream;
 import java.net.URI;

@@ -1,11 +1,11 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.lake.adapter;
 
 import org.apache.calcite.schema.Schema;
 import org.apache.calcite.schema.SchemaFactory;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.AbstractSchema;
-import systems.cauldron.drivers.config.TableSpec;
+import systems.cauldron.drivers.lake.config.TableSpec;
 
 import javax.json.Json;
 import javax.json.JsonArray;

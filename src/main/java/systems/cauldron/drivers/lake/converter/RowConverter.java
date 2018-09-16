@@ -1,6 +1,6 @@
-package systems.cauldron.drivers.converter;
+package systems.cauldron.drivers.lake.converter;
 
-import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.lake.config.TypeSpec;
 
 import java.time.Instant;
 import java.time.LocalDate;

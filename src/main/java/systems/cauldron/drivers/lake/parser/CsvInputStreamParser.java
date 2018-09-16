@@ -1,10 +1,10 @@
-package systems.cauldron.drivers.parser;
+package systems.cauldron.drivers.lake.parser;
 
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import systems.cauldron.drivers.config.FormatSpec;
-import systems.cauldron.drivers.converter.RowConverter;
+import systems.cauldron.drivers.lake.config.FormatSpec;
+import systems.cauldron.drivers.lake.converter.RowConverter;
 
 import java.io.Closeable;
 import java.io.InputStream;

@@ -1,10 +1,10 @@
-package systems.cauldron.drivers.scan;
+package systems.cauldron.drivers.lake.scan;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3URI;
-import systems.cauldron.drivers.config.FormatSpec;
-import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.lake.config.FormatSpec;
+import systems.cauldron.drivers.lake.config.TypeSpec;
 
 import java.net.URI;
 
