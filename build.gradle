@@ -33,3 +33,13 @@ dependencies {
     //unit testing
     testCompile group: 'junit', name: 'junit', version: '4+'
 }
+
+compileJava {
+    inputs.property("moduleName", 'systems.cauldron.drivers.lake')
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
+}
