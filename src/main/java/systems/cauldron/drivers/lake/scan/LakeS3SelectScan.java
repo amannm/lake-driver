@@ -1,7 +1,5 @@
 package systems.cauldron.drivers.lake.scan;
 
-import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.*;
 import org.apache.calcite.rex.RexNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,11 +46,12 @@ public class LakeS3SelectScan extends LakeS3Scan {
     @Override
     public InputStream getSource() {
 
-        SelectObjectContentRequest request = getRequest(s3Source, query, format);
-        SelectObjectContentResult result = s3Client.selectObjectContent(request);
-        SelectObjectContentEventStream payload = result.getPayload();
-
-        return payload.getRecordsInputStream();
+//        SelectObjectContentRequest request = getRequest(s3Source, query, format);
+//        SelectObjectContentResult result = s3Client.selectObjectContent(request);
+//        SelectObjectContentEventStream payload = result.getPayload();
+//
+//        return payload.getRecordsInputStream();
+        throw new UnsupportedOperationException("AWS SDK v2 does not support S3 Select ... yet");
 
     }
 
@@ -70,59 +69,59 @@ public class LakeS3SelectScan extends LakeS3Scan {
 
     }
 
-    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
-
-        SelectObjectContentRequest request = new SelectObjectContentRequest();
-        request.setBucketName(uri.getBucket());
-        request.setKey(uri.getKey());
-        request.setExpression(query);
-        request.setExpressionType(ExpressionType.SQL);
-        request.setInputSerialization(getInputSerialization(format));
-        request.setOutputSerialization(getOutputSerialization(format));
-
-        return request;
-
-    }
-
-    private static InputSerialization getInputSerialization(FormatSpec spec) {
-
-        CSVInput csvInput = new CSVInput();
-        csvInput.setFieldDelimiter(spec.delimiter);
-        csvInput.setRecordDelimiter(spec.lineSeparator);
-        csvInput.setQuoteCharacter(spec.quoteChar);
-        csvInput.setQuoteEscapeCharacter(spec.escape);
-        csvInput.setFileHeaderInfo(spec.header ? FileHeaderInfo.USE : FileHeaderInfo.NONE);
-        csvInput.setComments(spec.commentChar);
-
-        InputSerialization inputSerialization = new InputSerialization();
-        inputSerialization.setCsv(csvInput);
-        switch (spec.compression) {
-            case GZIP:
-                inputSerialization.setCompressionType(CompressionType.GZIP);
-                break;
-            case NONE:
-            default:
-                inputSerialization.setCompressionType(CompressionType.NONE);
-        }
-
-        return inputSerialization;
-
-    }
-
-    private static OutputSerialization getOutputSerialization(FormatSpec spec) {
-
-        CSVOutput csvOutput = new CSVOutput();
-        csvOutput.setFieldDelimiter(spec.delimiter);
-        csvOutput.setRecordDelimiter(spec.lineSeparator);
-        csvOutput.setQuoteCharacter(spec.quoteChar);
-        csvOutput.setQuoteEscapeCharacter(spec.escape);
-
-        OutputSerialization outputSerialization = new OutputSerialization();
-        outputSerialization.setCsv(csvOutput);
-
-        return outputSerialization;
-
-    }
+//    private static SelectObjectContentRequest getRequest(AmazonS3URI uri, String query, FormatSpec format) {
+//
+//        SelectObjectContentRequest request = new SelectObjectContentRequest();
+//        request.setBucketName(uri.getBucket());
+//        request.setKey(uri.getKey());
+//        request.setExpression(query);
+//        request.setExpressionType(ExpressionType.SQL);
+//        request.setInputSerialization(getInputSerialization(format));
+//        request.setOutputSerialization(getOutputSerialization(format));
+//
+//        return request;
+//
+//    }
+//
+//    private static InputSerialization getInputSerialization(FormatSpec spec) {
+//
+//        CSVInput csvInput = new CSVInput();
+//        csvInput.setFieldDelimiter(spec.delimiter);
+//        csvInput.setRecordDelimiter(spec.lineSeparator);
+//        csvInput.setQuoteCharacter(spec.quoteChar);
+//        csvInput.setQuoteEscapeCharacter(spec.escape);
+//        csvInput.setFileHeaderInfo(spec.header ? FileHeaderInfo.USE : FileHeaderInfo.NONE);
+//        csvInput.setComments(spec.commentChar);
+//
+//        InputSerialization inputSerialization = new InputSerialization();
+//        inputSerialization.setCsv(csvInput);
+//        switch (spec.compression) {
+//            case GZIP:
+//                inputSerialization.setCompressionType(CompressionType.GZIP);
+//                break;
+//            case NONE:
+//            default:
+//                inputSerialization.setCompressionType(CompressionType.NONE);
+//        }
+//
+//        return inputSerialization;
+//
+//    }
+//
+//    private static OutputSerialization getOutputSerialization(FormatSpec spec) {
+//
+//        CSVOutput csvOutput = new CSVOutput();
+//        csvOutput.setFieldDelimiter(spec.delimiter);
+//        csvOutput.setRecordDelimiter(spec.lineSeparator);
+//        csvOutput.setQuoteCharacter(spec.quoteChar);
+//        csvOutput.setQuoteEscapeCharacter(spec.escape);
+//
+//        OutputSerialization outputSerialization = new OutputSerialization();
+//        outputSerialization.setCsv(csvOutput);
+//
+//        return outputSerialization;
+//
+//    }
 
 
 }

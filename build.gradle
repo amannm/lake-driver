@@ -14,7 +14,7 @@ repositories {
 dependencies {
 
     //logging
-    //compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7+'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7+'
     //compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7+'
 
     //json tools
@@ -25,7 +25,7 @@ dependencies {
     compile group: 'org.apache.calcite', name: 'calcite-core', version: '1+'
 
     //cloud storage
-    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1+'
+    compile group: 'software.amazon.awssdk', name: 's3', version: '2+'
 
     //csv parsing
     compile group: 'com.univocity', name: 'univocity-parsers', version: '2+'

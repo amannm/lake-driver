@@ -1,5 +1,8 @@
 module systems.cauldron.drivers.lake {
 
+    //logging
+    requires slf4j.api;
+
     //SQL engine
     requires java.sql;
     requires calcite.core;
@@ -12,6 +15,7 @@ module systems.cauldron.drivers.lake {
     requires univocity.parsers;
 
     //cloud storage
-    requires aws.java.sdk.s3;
+    requires sdk.core;
+    requires s3;
 
 }
