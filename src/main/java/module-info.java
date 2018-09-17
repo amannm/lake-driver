@@ -19,4 +19,6 @@ module systems.cauldron.drivers.lake {
     requires sdk.core;
     requires s3;
 
+    exports systems.cauldron.drivers.lake;
+
 }
