@@ -2,6 +2,7 @@ module systems.cauldron.drivers.lake {
 
     //logging
     requires slf4j.api;
+    requires slf4j.simple;
 
     //SQL engine
     requires java.sql;
