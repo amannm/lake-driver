@@ -57,6 +57,7 @@ public class LakeDriverTest {
     private static final String TEST_QUERY_C = "select people.id, relationships.object_person_id from people inner join relationships on people.id = relationships.subject_person_id and relationships.predicate_id = 'has_friend' and people.firstname like '%mann'";
     private static final String TEST_RESULT_C = "1337,420";
 
+//TODO: wait for or figure out S3 Select support on AWS Java SDK v2
 //    @Test
 //    public void oneTableSimpleFilterS3SelectWhere() throws IOException {
 //        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people"), TEST_QUERY_A);

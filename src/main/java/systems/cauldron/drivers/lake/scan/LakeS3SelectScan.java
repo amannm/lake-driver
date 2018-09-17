@@ -46,6 +46,7 @@ public class LakeS3SelectScan extends LakeS3Scan {
     @Override
     public InputStream getSource() {
 
+//TODO: wait for or figure out S3 Select support on AWS Java SDK v2
 //        SelectObjectContentRequest request = getRequest(s3Source, query, format);
 //        SelectObjectContentResult result = s3Client.selectObjectContent(request);
 //        SelectObjectContentEventStream payload = result.getPayload();
