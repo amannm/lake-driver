@@ -1,36 +1,32 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.lake.adapter;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import systems.cauldron.drivers.LakeDriver;
-import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.scan.LakeS3GetScan;
-import systems.cauldron.drivers.scan.LakeS3SelectScan;
-import systems.cauldron.drivers.scan.LakeS3SelectWhereScan;
-import systems.cauldron.drivers.scan.LakeScan;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import systems.cauldron.drivers.lake.LakeDriver;
+import systems.cauldron.drivers.lake.config.TableSpec;
+import systems.cauldron.drivers.lake.scan.AmazonS3URI;
+import systems.cauldron.drivers.lake.scan.LakeS3GetScan;
+import systems.cauldron.drivers.lake.scan.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,41 +57,42 @@ public class LakeDriverTest {
     private static final String TEST_QUERY_C = "select people.id, relationships.object_person_id from people inner join relationships on people.id = relationships.subject_person_id and relationships.predicate_id = 'has_friend' and people.firstname like '%mann'";
     private static final String TEST_RESULT_C = "1337,420";
 
-    @Test
-    public void oneTableSimpleFilterS3SelectWhere() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
-        assertEquals(TEST_RESULT_A, resultString);
-    }
-
-    @Test
-    public void oneTableComplexFilterS3SelectWhere() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
-        assertEquals(TEST_RESULT_B, resultString);
-    }
-
-    @Test
-    public void twoTableSimpleJoinS3SelectWhere() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
-        assertEquals(TEST_RESULT_C, resultString);
-    }
-
-    @Test
-    public void oneTableSimpleFilterS3Select() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
-        assertEquals(TEST_RESULT_A, resultString);
-    }
-
-    @Test
-    public void oneTableComplexFilterS3Select() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
-        assertEquals(TEST_RESULT_B, resultString);
-    }
-
-    @Test
-    public void twoTableSimpleJoinS3Select() throws IOException {
-        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
-        assertEquals(TEST_RESULT_C, resultString);
-    }
+//TODO: wait for or figure out S3 Select support on AWS Java SDK v2
+//    @Test
+//    public void oneTableSimpleFilterS3SelectWhere() throws IOException {
+//        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
+//        assertEquals(TEST_RESULT_A, resultString);
+//    }
+//
+//    @Test
+//    public void oneTableComplexFilterS3SelectWhere() throws IOException {
+//        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+//        assertEquals(TEST_RESULT_B, resultString);
+//    }
+//
+//    @Test
+//    public void twoTableSimpleJoinS3SelectWhere() throws IOException {
+//        String resultString = executeTaskAndGetResult(LakeS3SelectWhereScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+//        assertEquals(TEST_RESULT_C, resultString);
+//    }
+//
+//    @Test
+//    public void oneTableSimpleFilterS3Select() throws IOException {
+//        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
+//        assertEquals(TEST_RESULT_A, resultString);
+//    }
+//
+//    @Test
+//    public void oneTableComplexFilterS3Select() throws IOException {
+//        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
+//        assertEquals(TEST_RESULT_B, resultString);
+//    }
+//
+//    @Test
+//    public void twoTableSimpleJoinS3Select() throws IOException {
+//        String resultString = executeTaskAndGetResult(LakeS3SelectScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
+//        assertEquals(TEST_RESULT_C, resultString);
+//    }
 
     @Test
     public void oneTableSimpleFilterS3Get() throws IOException {
@@ -181,35 +178,35 @@ public class LakeDriverTest {
     }
 
     public static void downloadFile(URI uri, Path localDestination) {
-        final AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-        final AmazonS3URI sourceUri = new AmazonS3URI(uri);
-        try {
-            S3Object o = s3.getObject(sourceUri.getBucket(), sourceUri.getKey());
-            try (S3ObjectInputStream s3is = o.getObjectContent()) {
-                Files.copy(s3is, localDestination, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (AmazonServiceException | IOException e) {
+        S3Client s3 = S3Client.builder().build();
+        AmazonS3URI amazonS3URI = new AmazonS3URI(uri);
+        try (InputStream s3is = s3.getObject(GetObjectRequest.builder()
+                        .bucket(amazonS3URI.getBucket())
+                        .key(amazonS3URI.getKey())
+                        .build(),
+                ResponseTransformer.toInputStream())) {
+            Files.copy(s3is, localDestination, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static void uploadFile(Path localSource, URI uri) {
-        final AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-        final AmazonS3URI destinationUri = new AmazonS3URI(uri);
-        try {
-            s3.putObject(destinationUri.getBucket(), destinationUri.getKey(), localSource.toFile());
-        } catch (AmazonServiceException e) {
-            throw new RuntimeException(e);
-        }
+        S3Client s3 = S3Client.builder().build();
+        AmazonS3URI amazonS3URI = new AmazonS3URI(uri);
+        s3.putObject(PutObjectRequest.builder()
+                        .bucket(amazonS3URI.getBucket())
+                        .key(amazonS3URI.getKey())
+                        .build(),
+                RequestBody.fromFile(localSource));
     }
 
     public static void deleteFile(URI uri) {
-        final AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
-        final AmazonS3URI destinationUri = new AmazonS3URI(uri);
-        try {
-            s3.deleteObject(destinationUri.getBucket(), destinationUri.getKey());
-        } catch (AmazonServiceException e) {
-            throw new RuntimeException(e);
-        }
+        S3Client s3 = S3Client.builder().build();
+        AmazonS3URI amazonS3URI = new AmazonS3URI(uri);
+        s3.deleteObject(DeleteObjectRequest.builder()
+                .bucket(amazonS3URI.getBucket())
+                .key(amazonS3URI.getKey())
+                .build());
     }
 }

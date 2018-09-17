@@ -25,15 +25,21 @@ dependencies {
     compile group: 'org.apache.calcite', name: 'calcite-core', version: '1+'
 
     //cloud storage
-    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1+'
+    compile group: 'software.amazon.awssdk', name: 's3', version: '2+'
 
     //csv parsing
     compile group: 'com.univocity', name: 'univocity-parsers', version: '2+'
 
-    //tabular compression
-    compile group: 'org.apache.parquet', name: 'parquet-avro', version: '1.10.0'
-    compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.4.0'
-
     //unit testing
     testCompile group: 'junit', name: 'junit', version: '4+'
+}
+
+compileJava {
+    inputs.property("moduleName", 'systems.cauldron.drivers.lake')
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
 }
