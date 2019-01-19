@@ -2,11 +2,11 @@ package systems.cauldron.drivers.lake.converter;
 
 import systems.cauldron.drivers.lake.config.TypeSpec;
 
-public class ProjectedRowConverter extends RowConverter {
+public class ProjectedStringRowConverter extends StringRowConverter {
 
     private final TypeSpec[] projectedFieldTypes;
 
-    public ProjectedRowConverter(TypeSpec[] projectedFieldTypes) {
+    public ProjectedStringRowConverter(TypeSpec[] projectedFieldTypes) {
         this.projectedFieldTypes = projectedFieldTypes;
     }
 

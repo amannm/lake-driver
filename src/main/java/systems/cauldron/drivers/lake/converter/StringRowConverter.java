@@ -9,7 +9,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public abstract class RowConverter {
+public abstract class StringRowConverter {
 
     public abstract Object[] convertRow(String[] values);
 

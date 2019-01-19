@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import systems.cauldron.drivers.lake.config.FormatSpec;
 import systems.cauldron.drivers.lake.config.TypeSpec;
-import systems.cauldron.drivers.lake.converter.ProjectedRowConverter;
-import systems.cauldron.drivers.lake.converter.RowConverter;
+import systems.cauldron.drivers.lake.converter.ProjectedStringRowConverter;
+import systems.cauldron.drivers.lake.converter.StringRowConverter;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -21,25 +21,25 @@ public class LakeS3SelectScan extends LakeS3Scan {
     private final String query;
 
     LakeS3SelectScan(URI source, FormatSpec format, TypeSpec[] fieldTypes, int[] projects) {
-        super(source, format, fieldTypes, projects);
+        super(fieldTypes, projects, source, format);
         this.query = compileSelectFromClause(projects);
         LOG.debug("{}", query);
     }
 
     LakeS3SelectScan(URI source, FormatSpec format, TypeSpec[] fieldTypes, int[] projects, List<RexNode> filters) {
-        super(source, format, fieldTypes, projects);
+        super(fieldTypes, projects, source, format);
         this.query = compileQuery(projects, filters);
         LOG.debug("{}", query);
     }
 
     @Override
-    public RowConverter getRowConverter() {
+    public StringRowConverter getStringRowConverter() {
 
         TypeSpec[] projectedTypes = IntStream.of(projects).boxed()
                 .map(i -> types[i])
                 .toArray(TypeSpec[]::new);
 
-        return new ProjectedRowConverter(projectedTypes);
+        return new ProjectedStringRowConverter(projectedTypes);
 
     }
 

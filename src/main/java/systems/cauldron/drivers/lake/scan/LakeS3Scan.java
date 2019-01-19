@@ -6,11 +6,12 @@ import systems.cauldron.drivers.lake.config.TypeSpec;
 
 import java.net.URI;
 
-abstract class LakeS3Scan extends LakeScan {
+abstract class LakeS3Scan extends LakeCsvScan {
 
     final S3Client s3 = S3Client.builder().build();
 
-    LakeS3Scan(URI source, FormatSpec format, TypeSpec[] types, int[] projects) {
-        super(source, format, types, projects);
+    LakeS3Scan(TypeSpec[] types, int[] projects, URI source, FormatSpec format) {
+        super(types, projects, source, format);
     }
+
 }

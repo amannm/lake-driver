@@ -4,8 +4,8 @@ import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import systems.cauldron.drivers.lake.config.FormatSpec;
 import systems.cauldron.drivers.lake.config.TypeSpec;
-import systems.cauldron.drivers.lake.converter.NonProjectedRowConverter;
-import systems.cauldron.drivers.lake.converter.RowConverter;
+import systems.cauldron.drivers.lake.converter.NonProjectedStringRowConverter;
+import systems.cauldron.drivers.lake.converter.StringRowConverter;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -13,12 +13,12 @@ import java.net.URI;
 public class LakeS3GetScan extends LakeS3Scan {
 
     LakeS3GetScan(URI source, FormatSpec format, TypeSpec[] types, int[] projects) {
-        super(source, format, types, projects);
+        super(types, projects, source, format);
     }
 
     @Override
-    public RowConverter getRowConverter() {
-        return new NonProjectedRowConverter(types, projects);
+    public StringRowConverter getStringRowConverter() {
+        return new NonProjectedStringRowConverter(types, projects);
     }
 
     @Override
