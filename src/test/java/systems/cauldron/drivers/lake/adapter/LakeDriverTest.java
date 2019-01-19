@@ -1,8 +1,8 @@
 package systems.cauldron.drivers.lake.adapter;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -31,18 +31,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class LakeDriverTest {
 
     private static final String TEST_BUCKET = "build.cauldron.tools";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         stageInputs("people", "relationships");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         unstageInputs("people", "relationships");
     }
@@ -95,19 +96,19 @@ public class LakeDriverTest {
 //    }
 
     @Test
-    public void oneTableSimpleFilterS3Get() throws IOException {
+    void oneTableSimpleFilterS3Get() throws IOException {
         String resultString = executeTaskAndGetResult(LakeS3GetScan.class, generateTableSpecifications("people"), TEST_QUERY_A);
         assertEquals(TEST_RESULT_A, resultString);
     }
 
     @Test
-    public void oneTableComplexFilterS3Get() throws IOException {
+    void oneTableComplexFilterS3Get() throws IOException {
         String resultString = executeTaskAndGetResult(LakeS3GetScan.class, generateTableSpecifications("relationships"), TEST_QUERY_B);
         assertEquals(TEST_RESULT_B, resultString);
     }
 
     @Test
-    public void twoTableSimpleJoinS3Get() throws IOException {
+    void twoTableSimpleJoinS3Get() throws IOException {
         String resultString = executeTaskAndGetResult(LakeS3GetScan.class, generateTableSpecifications("people", "relationships"), TEST_QUERY_C);
         assertEquals(TEST_RESULT_C, resultString);
     }
