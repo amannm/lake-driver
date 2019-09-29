@@ -22,7 +22,7 @@ public class LakeS3GetScan extends LakeS3Scan {
     }
 
     @Override
-    public InputStream getSource() {
+    public InputStream getSourceInputStream() {
         AmazonS3URI amazonS3URI = new AmazonS3URI(source);
         return s3.getObject(GetObjectRequest.builder()
                         .bucket(amazonS3URI.getBucket())

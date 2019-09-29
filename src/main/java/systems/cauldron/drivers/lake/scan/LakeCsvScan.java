@@ -20,16 +20,16 @@ public abstract class LakeCsvScan extends LakeScan {
         this.format = format;
     }
 
+    @Override
     public RecordParser getRecordParser() {
         return new CsvRecordParser(
                 this.format,
                 this.getStringRowConverter(),
-                this.getSource());
-
+                this.getSourceInputStream());
     }
 
     public abstract StringRowConverter getStringRowConverter();
 
-    public abstract InputStream getSource();
+    public abstract InputStream getSourceInputStream();
 
 }
