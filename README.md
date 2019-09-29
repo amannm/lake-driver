@@ -16,7 +16,6 @@
 
 ## todo
 * improve WHERE push-down
-* explore usage of Java Flow API (Reactive Streams)
 * performance profiling, optimization
 * smarter, more comprehensive testing
 * mixed scan mode: some table scans are better GET, others SELECT
