@@ -35,5 +35,12 @@ dependencies {
     compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.4.0'
 
     //unit testing
-    testCompile group: 'junit', name: 'junit', version: '4+'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5+'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5+'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5+'
+
+}
+
+test {
+    useJUnitPlatform()
 }
