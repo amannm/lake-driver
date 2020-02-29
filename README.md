@@ -11,8 +11,8 @@
   * pass a list of TableSpecification defining all "external tables" your query needs to be a valid reference
   * (optional) specify one of the following Scan classes to configure behavior
     * `LakeS3GetScan` uses GetObject, full tables are downloaded, both projection and filtering are performed in memory
-    * `LakeS3SelectScan` (default) uses SelectObjectContent, only the required projected columns are downloaded, filtering is done in memory
-    * `LakeS3SelectWhereScan` (experimental) uses SelectObjectContent, both projection and filtering is done on AWS, the results are downloaded, any remaining untranslated filters are applied in memory
+    * `LakeS3SelectScan` Uses SelectObjectContent, only the required projected columns are downloaded, filtering is done in memory
+    * `LakeS3SelectWhereScan` (default) uses SelectObjectContent, both projection and filtering is done on AWS, the results are downloaded, any remaining untranslated filters are applied in memory
 
 ## todo
 * improve WHERE push-down
