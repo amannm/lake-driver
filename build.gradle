@@ -18,32 +18,25 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7+'
 
     //json tools
+    compile group: 'javax.json', name: 'javax.json-api', version: '1+'
     compile group: 'org.glassfish', name: 'javax.json', version: '1+'
 
     //sql engine
     compile group: 'org.apache.calcite', name: 'calcite-core', version: '1+'
 
     //cloud storage
-    compile group: 'software.amazon.awssdk', name: 's3', version: '2+'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1+'
 
     //csv parsing
     compile group: 'com.univocity', name: 'univocity-parsers', version: '2+'
 
     //unit testing
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5+'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5+'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5+'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5+'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5+'
+
 }
 
 test {
     useJUnitPlatform()
-}
-
-compileJava {
-    inputs.property("moduleName", 'systems.cauldron.drivers.lake')
-    doFirst {
-        options.compilerArgs = [
-                '--module-path', classpath.asPath,
-        ]
-        classpath = files()
-    }
 }

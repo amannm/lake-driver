@@ -11,7 +11,11 @@ import systems.cauldron.drivers.lake.config.FormatSpec;
 import systems.cauldron.drivers.lake.config.TypeSpec;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Stack;
 
 import static org.apache.calcite.sql.SqlKind.INPUT_REF;
 import static org.apache.calcite.sql.SqlKind.LITERAL;
@@ -37,12 +41,9 @@ public class LakeS3SelectWhereScan extends LakeS3SelectScan {
             if (RelOptUtil.disjunctions(filter).size() == 1) {
                 List<RexNode> conjunctions = RelOptUtil.conjunctions(filter);
                 for (RexNode conjunction : conjunctions) {
-                    Optional<String> handledFilterString = tryFilterConversion(conjunction);
-                    if (handledFilterString.isPresent()) {
-                        handledFilters.add(handledFilterString.get());
-                    } else {
-                        unhandledFilters.add(conjunction);
-                    }
+                    tryFilterConversion(conjunction).ifPresentOrElse(
+                            handledFilters::add,
+                            () -> unhandledFilters.add(conjunction));
                 }
                 filterIterator.remove();
             } else {
