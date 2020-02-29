@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.lake.adapter;
 
 import org.apache.calcite.DataContext;
 import org.apache.calcite.linq4j.AbstractEnumerable;
@@ -9,12 +9,13 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.ProjectableFilterableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
-import systems.cauldron.drivers.config.ColumnSpec;
-import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.parser.CsvInputStreamParser;
-import systems.cauldron.drivers.scan.LakeScan;
-import systems.cauldron.drivers.scan.LakeScanner;
+import systems.cauldron.drivers.lake.config.ColumnSpec;
+import systems.cauldron.drivers.lake.config.TableSpec;
+import systems.cauldron.drivers.lake.parser.RecordParser;
+import systems.cauldron.drivers.lake.scan.LakeScan;
+import systems.cauldron.drivers.lake.scan.LakeScanner;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,10 +57,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
 
             public Enumerator<Object[]> enumerator() {
 
-                CsvInputStreamParser parser = new CsvInputStreamParser(
-                        scan.getFormat(),
-                        scan.getRowConverter(),
-                        scan.getSource());
+                RecordParser parser = scan.getRecordParser();
 
                 return new Enumerator<>() {
 
@@ -74,7 +72,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                             return false;
                         }
                         Optional<Object[]> result = parser.parseRecord();
-                        if (!result.isPresent()) {
+                        if (result.isEmpty()) {
                             current = null;
                             return false;
                         }
@@ -87,7 +85,11 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                     }
 
                     public void close() {
-                        parser.close();
+                        try {
+                            parser.close();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
                 };

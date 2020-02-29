@@ -1,8 +1,8 @@
-package systems.cauldron.drivers.scan;
+package systems.cauldron.drivers.lake.scan;
 
 import org.apache.calcite.rex.RexNode;
-import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.lake.config.TableSpec;
+import systems.cauldron.drivers.lake.config.TypeSpec;
 
 import java.util.List;
 import java.util.function.BiFunction;

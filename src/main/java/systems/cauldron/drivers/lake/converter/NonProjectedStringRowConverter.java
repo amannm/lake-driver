@@ -1,13 +1,13 @@
-package systems.cauldron.drivers.converter;
+package systems.cauldron.drivers.lake.converter;
 
-import systems.cauldron.drivers.config.TypeSpec;
+import systems.cauldron.drivers.lake.config.TypeSpec;
 
-public class NonProjectedRowConverter extends RowConverter {
+public class NonProjectedStringRowConverter extends StringRowConverter {
 
     private final TypeSpec[] fieldTypes;
     private final int[] projects;
 
-    public NonProjectedRowConverter(TypeSpec[] fieldTypes, int[] projects) {
+    public NonProjectedStringRowConverter(TypeSpec[] fieldTypes, int[] projects) {
         this.fieldTypes = fieldTypes;
         this.projects = projects;
     }

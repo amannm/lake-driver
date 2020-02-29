@@ -20,3 +20,5 @@
 * smarter, more comprehensive testing
 * mixed scan mode: some table scans are better GET, others SELECT
 * integrate and test the parquet compression support and save cash
+* get rid of AmazonS3URI.java dependency
+* figure out a way to get S3 Select working on AWS SDK v2

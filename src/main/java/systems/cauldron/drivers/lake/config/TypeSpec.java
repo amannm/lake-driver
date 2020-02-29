@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.config;
+package systems.cauldron.drivers.lake.config;
 
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;

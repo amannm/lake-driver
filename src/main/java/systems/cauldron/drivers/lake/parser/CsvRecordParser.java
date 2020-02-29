@@ -1,22 +1,21 @@
-package systems.cauldron.drivers.parser;
+package systems.cauldron.drivers.lake.parser;
 
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import systems.cauldron.drivers.config.FormatSpec;
-import systems.cauldron.drivers.converter.RowConverter;
+import systems.cauldron.drivers.lake.config.FormatSpec;
+import systems.cauldron.drivers.lake.converter.StringRowConverter;
 
-import java.io.Closeable;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class CsvInputStreamParser implements Closeable {
+public class CsvRecordParser implements RecordParser {
 
     private final CsvParser parser;
-    private final RowConverter converter;
+    private final StringRowConverter converter;
 
-    public CsvInputStreamParser(FormatSpec spec, RowConverter converter, InputStream inputStream) {
+    public CsvRecordParser(FormatSpec spec, StringRowConverter converter, InputStream inputStream) {
 
         CsvFormat format = new CsvFormat();
         format.setDelimiter(spec.delimiter);
