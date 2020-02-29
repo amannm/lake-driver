@@ -1,9 +1,9 @@
-package systems.cauldron.drivers;
+package systems.cauldron.drivers.lake;
 
-import systems.cauldron.drivers.adapter.LakeSchemaFactory;
-import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.scan.LakeS3SelectWhereScan;
-import systems.cauldron.drivers.scan.LakeScan;
+import systems.cauldron.drivers.lake.adapter.LakeSchemaFactory;
+import systems.cauldron.drivers.lake.config.TableSpec;
+import systems.cauldron.drivers.lake.scan.LakeS3SelectWhereScan;
+import systems.cauldron.drivers.lake.scan.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonArray;

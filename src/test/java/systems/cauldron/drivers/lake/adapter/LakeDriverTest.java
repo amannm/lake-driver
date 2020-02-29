@@ -1,4 +1,4 @@
-package systems.cauldron.drivers.adapter;
+package systems.cauldron.drivers.lake.adapter;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -11,12 +11,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import systems.cauldron.drivers.LakeDriver;
-import systems.cauldron.drivers.config.TableSpec;
-import systems.cauldron.drivers.scan.LakeS3GetScan;
-import systems.cauldron.drivers.scan.LakeS3SelectScan;
-import systems.cauldron.drivers.scan.LakeS3SelectWhereScan;
-import systems.cauldron.drivers.scan.LakeScan;
+import systems.cauldron.drivers.lake.LakeDriver;
+import systems.cauldron.drivers.lake.config.TableSpec;
+import systems.cauldron.drivers.lake.scan.LakeS3GetScan;
+import systems.cauldron.drivers.lake.scan.LakeS3SelectScan;
+import systems.cauldron.drivers.lake.scan.LakeS3SelectWhereScan;
+import systems.cauldron.drivers.lake.scan.LakeScan;
 
 import javax.json.Json;
 import javax.json.JsonObject;
