@@ -26,7 +26,8 @@ public enum TypeSpec {
     private final Class clazz;
     private final String stringName;
 
-    private static final Map<String, TypeSpec> MAP = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(v -> v.stringName, v -> v));
+    private static final Map<String, TypeSpec> MAP = Arrays.stream(values())
+            .collect(Collectors.toUnmodifiableMap(v -> v.stringName, v -> v));
 
     TypeSpec(Class clazz, String stringName) {
         this.clazz = clazz;

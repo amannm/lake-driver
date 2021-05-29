@@ -12,6 +12,7 @@ public class NonProjectedRowConverter extends RowConverter {
         this.projects = projects;
     }
 
+    @Override
     public Object[] convertRow(String[] values) {
         final Object[] result = new Object[projects.length];
         for (int i = 0; i < projects.length; i++) {

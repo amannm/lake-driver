@@ -74,7 +74,7 @@ public class LakeTable extends AbstractTable implements ProjectableFilterableTab
                             return false;
                         }
                         Optional<Object[]> result = parser.parseRecord();
-                        if (!result.isPresent()) {
+                        if (result.isEmpty()) {
                             current = null;
                             return false;
                         }

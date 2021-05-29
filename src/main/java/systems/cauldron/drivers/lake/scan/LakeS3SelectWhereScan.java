@@ -80,8 +80,9 @@ public class LakeS3SelectWhereScan extends LakeS3SelectScan {
     }
 
     private static Optional<String> tryOperatorFilterConversion(String op, RexCall call) {
-        RexNode originalLeft = call.operands.get(0);
-        RexNode originalRight = call.operands.get(1);
+        List<RexNode> operands = call.getOperands();
+        RexNode originalLeft = operands.get(0);
+        RexNode originalRight = operands.get(1);
 
         RexNode left = unwrapCasts(originalLeft);
         RexNode right = unwrapCasts(originalRight);
@@ -108,8 +109,11 @@ public class LakeS3SelectWhereScan extends LakeS3SelectScan {
     }
 
     private static RexNode unwrapCasts(RexNode node) {
+
         while (node.isA(SqlKind.CAST)) {
-            node = ((RexCall) node).operands.get(0);
+            RexCall call = (RexCall) node;
+            List<RexNode> operands = call.getOperands();
+            node = operands.get(0);
         }
         return node;
     }
@@ -119,7 +123,9 @@ public class LakeS3SelectWhereScan extends LakeS3SelectScan {
         while (node.isA(SqlKind.CAST)) {
             String datatype = node.getType().getSqlTypeName().getName();
             stack.push("CAST(%s AS " + datatype + ")");
-            node = ((RexCall) node).operands.get(0);
+            RexCall call = (RexCall) node;
+            List<RexNode> operands = call.getOperands();
+            node = operands.get(0);
         }
         String result = "%s";
         while (!stack.isEmpty()) {

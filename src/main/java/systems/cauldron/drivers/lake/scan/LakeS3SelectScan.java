@@ -12,8 +12,8 @@ import com.amazonaws.services.s3.model.SelectObjectContentEventStream;
 import com.amazonaws.services.s3.model.SelectObjectContentRequest;
 import com.amazonaws.services.s3.model.SelectObjectContentResult;
 import org.apache.calcite.rex.RexNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import systems.cauldron.drivers.lake.config.FormatSpec;
 import systems.cauldron.drivers.lake.config.TypeSpec;
 import systems.cauldron.drivers.lake.converter.ProjectedRowConverter;
@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 
 public class LakeS3SelectScan extends LakeS3Scan {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LakeS3SelectScan.class);
+    private static final Logger LOG = LogManager.getLogger(LakeS3SelectScan.class);
 
     private final String query;
 

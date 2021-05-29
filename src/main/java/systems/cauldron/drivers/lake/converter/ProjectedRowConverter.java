@@ -10,6 +10,7 @@ public class ProjectedRowConverter extends RowConverter {
         this.projectedFieldTypes = projectedFieldTypes;
     }
 
+    @Override
     public Object[] convertRow(String[] values) {
         final Object[] result = new Object[projectedFieldTypes.length];
         for (int i = 0; i < projectedFieldTypes.length; i++) {
